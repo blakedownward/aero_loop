@@ -1,6 +1,19 @@
 data/processed/*
 data/raw/*
 
-*.idea/
+.idea/
 
 venv/
+
+# Python bytecode/cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Virtual environments (any depth)
+.venv/
+**/.venv/
+**/venv/
+
+# OS/editor noise
+.DS_Store

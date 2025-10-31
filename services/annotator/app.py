@@ -1,5 +1,9 @@
 import os
+import json
+import wave
 import pandas as pd
+import sys
+import importlib
 import streamlit as st
 import librosa
 import matplotlib.pyplot as plt
@@ -7,9 +11,11 @@ import librosa.display
 
 
 # set constants
-CWD = os.getcwd()
+# Resolve repo root based on this file location
+_HERE = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(_HERE, os.pardir, os.pardir))
 # Define the path to the raw data folder of audio files to label
-RAW_PATH = os.path.join(CWD, '../../data/raw')
+RAW_PATH = os.path.join(REPO_ROOT, 'data', 'raw')
 
 
 # html and css styling
@@ -29,22 +35,17 @@ def load_show_wave(audio_filepath, fig_width=14, fig_height=5):
 
 
 def fetch_unprocessed_batches():
+    # list only directories inside RAW_PATH that are not marked processed
+    if not os.path.isdir(RAW_PATH):
+        return []
 
-    subdirs = os.listdir(RAW_PATH)
-
-    # return if no unprocessed dirs
-    if len(subdirs) < 1:
-        return None
-
+    subdirs = [d for d in os.listdir(RAW_PATH) if os.path.isdir(os.path.join(RAW_PATH, d))]
     unprocessed = []
-
     for batch in subdirs:
-        if ".processed" in os.listdir(os.path.join(RAW_PATH, batch)):
-            pass
-        elif "annotations.json" in os.listdir(os.path.join(RAW_PATH, batch)):
-            pass
-        else:
-            unprocessed.append(batch)
+        batch_dir = os.path.join(RAW_PATH, batch)
+        if ".processed" in os.listdir(batch_dir):
+            continue
+        unprocessed.append(batch)
 
     return unprocessed
 
@@ -56,71 +57,172 @@ def fetch_unprocessed_batch(batch: str):
     return [file for file in files if file.endswith(".wav")]
 
 
-def append_annotation_file(batch: str, data):
+def _load_annotations(batch: str):
     batch_path = os.path.join(RAW_PATH, batch)
     annotation_path = os.path.join(batch_path, 'annotations.json')
-    # check if exists first, if not create
-    if os.path.isfile(annotation_path):
-        # TODO: append json
+    if not os.path.isfile(annotation_path):
+        return []
+    try:
+        with open(annotation_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            if isinstance(data, list):
+                return data
+            return []
+    except json.JSONDecodeError:
+        return []
+
+
+def _save_annotations(batch: str, records: list):
+    batch_path = os.path.join(RAW_PATH, batch)
+    annotation_path = os.path.join(batch_path, 'annotations.json')
+    with open(annotation_path, 'w', encoding='utf-8') as f:
+        json.dump(records, f, ensure_ascii=False, indent=2)
+
+
+def append_annotation_file(batch: str, data):
+    # append or update entry for filename in annotations.json
+    records = _load_annotations(batch)
+    filename = data.get("filename")
+    updated = False
+    for i, rec in enumerate(records):
+        if rec.get("filename") == filename:
+            records[i] = data
+            updated = True
+            break
+    if not updated:
+        records.append(data)
+    _save_annotations(batch, records)
+
+
+def _wav_duration_seconds(filepath: str) -> int:
+    """Return duration (in whole seconds) for a WAV file.
+    Falls back to 1 if duration cannot be determined.
+    """
+    try:
+        with wave.open(filepath, 'rb') as wf:
+            frames = wf.getnframes()
+            rate = wf.getframerate()
+            if rate and frames:
+                seconds = int(round(frames / float(rate)))
+                return max(1, seconds)
+    except Exception:
         pass
-    else:
-        # TODO: dump json into new file
-        pass
+    return 60
 
 def check_if_annotated(batch: str, filename: str):
+    # return True if filename already present in annotations
     batch_path = os.path.join(RAW_PATH, batch)
     annotation_path = os.path.join(batch_path, 'annotations.json')
     try:
-        # TODO: open annotations.json if filename error, assume none annotated yet
-        pass
+        with open(annotation_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            if isinstance(data, list):
+                return any(d.get("filename") == filename for d in data)
+            return False
     except FileNotFoundError:
-        return False
-    finally:
         return False
 
 unprocessed_batches = fetch_unprocessed_batches()
-target_batch = unprocessed_batches[0]
-target_batch_path = os.path.join(RAW_PATH, target_batch)
-target_batch_files = fetch_unprocessed_batch(target_batch)
-
-total_wav_files = len(target_batch_files)
 
 
-# logic for selecting the next file not already in the output file
-for file in target_batch_files:
+def _render_all_done():
+    st.success("All batches annotated. Ready to process.")
+    if st.button("Process Data"):
+        with st.spinner("Processing annotated batches..."):
+            ok, msg = _run_processor()
+        if ok:
+            st.success("Processing complete. Outputs in data/processed.")
+        else:
+            st.error(f"Processing failed: {msg}")
 
-    # check if the recording is in the annotations.json
-    if not check_if_annotated(batch=target_batch, filename=file):
 
+def _run_processor():
+    try:
+        mlops_path = os.path.join(REPO_ROOT, 'services', 'mlops')
+        if mlops_path not in sys.path:
+            sys.path.insert(0, mlops_path)
+        import processor  # type: ignore
+        processor.process()
+        return True, "ok"
+    except Exception as e:
+        return False, str(e)
+
+
+# Handle case of no batches
+if len(unprocessed_batches) == 0:
+    _render_all_done()
+else:
+    # session state for navigation
+    if "batch_idx" not in st.session_state:
+        st.session_state.batch_idx = 0
+    if "file_idx" not in st.session_state:
+        st.session_state.file_idx = 0
+
+    # bounds check for batch index
+    if st.session_state.batch_idx >= len(unprocessed_batches):
+        st.session_state.batch_idx = 0
+
+    target_batch = unprocessed_batches[st.session_state.batch_idx]
+    target_batch_path = os.path.join(RAW_PATH, target_batch)
+    target_batch_files = fetch_unprocessed_batch(target_batch)
+
+    # filter out already annotated files
+    remaining_files = [f for f in target_batch_files if not check_if_annotated(batch=target_batch, filename=f)]
+
+    # if no remaining files -> mark processed and move to next batch
+    if len(remaining_files) == 0:
+        # mark processed
+        open(os.path.join(target_batch_path, '.processed'), 'a').close()
+        st.session_state.batch_idx += 1
+        st.session_state.file_idx = 0
+        # refresh list of batches
+        unprocessed_batches = fetch_unprocessed_batches()
+        if len(unprocessed_batches) == 0:
+            _render_all_done()
+        else:
+            st.rerun()
+    else:
+        # clamp file index
+        if st.session_state.file_idx >= len(remaining_files):
+            st.session_state.file_idx = 0
+
+        file = remaining_files[st.session_state.file_idx]
         filepath = os.path.join(target_batch_path, file)
 
         head1, head2 = st.columns(2)
 
         with head1:
+            st.subheader(f"Batch: {target_batch}")
             st.header(file)
 
-            audio_file = open(filepath, 'rb')
-            audio_bytes = audio_file.read()
+            with open(filepath, 'rb') as audio_file:
+                audio_bytes = audio_file.read()
 
-            audible_range = st.slider('Ideal audio clip range', 0, 60, (0, 60), step=5)
+            clip_len = _wav_duration_seconds(filepath)
+            audible_range = st.slider('Ideal audio clip range', 0, clip_len, (0, clip_len), step=1)
 
-            st.write(file)
             st.audio(audio_bytes, format='audio/wav')
 
+            
+            # Default aircraft audible based on clip length:
+            # 20s -> False, 60s -> True, others -> True (default)
+            classification_default = True
+            if clip_len == 20:
+                classification_default = False
+            elif clip_len == 60:
+                classification_default = True
+            classification = st.checkbox('Aircraft audible', value=classification_default)
+            flag = st.checkbox('Flag clip', value=False)
 
         with head2:
-
-            x, sr = librosa.load(filepath)
-
+            x, sr = librosa.load(filepath, sr=None)
             fig, ax = plt.subplots()
-
-            ax = librosa.display.waveshow(x)
-            plt.yticks([])
+            librosa.display.waveshow(x, sr=sr, ax=ax)
+            ax.set_yticks([])
             st.pyplot(fig)
 
-
-            classification = st.checkbox('Aircraft audible', value=True)
-            flag = st.checkbox('Flag clip', value=False)
+            
+            
             audible_start = audible_range[0]
             audible_end = audible_range[1]
 
@@ -132,29 +234,16 @@ for file in target_batch_files:
                 "flag": flag
             }
 
-
-            # commit results button
             c1, c2 = st.columns(2)
 
             with c1:
-                sc1, sc2 = st.columns(2)
+                # Submit button to commit the labelling data
+                if st.button('Commit'):
+                    append_annotation_file(batch=target_batch, data=data)
+                    st.session_state.file_idx += 1
+                    st.rerun()
+                else:
+                    st.write(':red[Not Saved.]')
 
-                with sc1:
-                    # Submit button to commit the labelling data to the main CSV
-                    if st.button('Commit'):
-                        append_annotation_file(batch=target_batch, data=data)
-                        st.empty()
-
-                    else:
-                        st.write(':red[Not Saved.]')
-
-
-                with sc2:
-                    if st.button('Next file'):
-                        break
-
-                    else:
-                        pass
-
-                    break
-
+            with c2:
+                pass
