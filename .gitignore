@@ -1,0 +1,6 @@
+data/processed/*
+data/raw/*
+
+*.idea/
+
+venv/
