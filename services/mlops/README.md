@@ -1,15 +1,17 @@
 # AeroLoop MLOps — Processor
 
-- Trims annotated WAVs from `data/raw/<batch>` based on `annotations.json` and moves them to `data/processed`.
-- Skips work already logged in `data/processed/labels.csv` (idempotent).
+This script is the first of the MLOps tasks, and can be run directly after a batch has been annotated. 
+
+- Trims annotated WAVs from `data/raw/<batch>` based on `annotations.json`, creating a trimmed copy in `data/processed`.
+- Skips work already logged in `data/processed/labels.csv`.
 
 ## Quick Start
-- Install: `pip install librosa soundfile`
+- Install: `pip install -r requirements.txt`
 - Run (repo root): `python services/mlops/processor.py`
 
 ## Inputs
 - Completed batches only: `data/raw/<batch>/.processed` and `data/raw/<batch>/annotations.json`.
-- Annotation record fields used: `filename`, `label` (True=aircraft), `trim_start_s`, `trim_end`.
+- Annotation record fields used: `filename`, `label` (True=aircraft), `trim_start_s`, `trim_end_s`.
 
 ## Outputs
 - Trimmed WAVs to:

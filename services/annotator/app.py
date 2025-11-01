@@ -230,7 +230,7 @@ else:
                 "filename": file,
                 "label": classification,
                 "trim_start_s": audible_start,
-                "trim_end": audible_end,
+                "trim_end_s": audible_end,
                 "flag": flag
             }
 

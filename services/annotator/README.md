@@ -5,7 +5,7 @@
 - Plays audio, shows waveform, and supports a start/end range slider.
 
 ## Quick Start
-- Install: `pip install streamlit librosa matplotlib pandas soundfile`
+- Install: `pip install -r requirements.txt`
 - Run (repo root): `streamlit run services/annotator/app.py`
 
 ## Data Layout

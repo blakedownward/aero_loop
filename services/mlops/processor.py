@@ -2,7 +2,7 @@
 
 Reads annotations from data/raw/<batch>/annotations.json for batches
 that have been marked complete via a .processed file. For each entry,
-trims the clip to [trim_start_s, trim_end] and writes into
+trims the clip to [trim_start_s, trim_end_s] and writes into
 data/processed/aircraft or data/processed/negative.
 
 Each processed sample is logged to data/processed/labels.csv to avoid
@@ -58,7 +58,7 @@ def append_label_row(row: Dict):
     with open(LABELS_CSV, 'a', newline='', encoding='utf-8') as f:
         fieldnames = [
             'timestamp', 'batch', 'filename', 'class', 'src', 'dst',
-            'trim_start_s', 'trim_end', 'duration_s', 'sample_rate', 'dtype'
+            'trim_start_s', 'trim_end_s', 'duration_s', 'sample_rate', 'dtype'
         ]
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         if not file_exists:
@@ -131,7 +131,7 @@ def process():
             filename = rec.get('filename')
             label_bool = bool(rec.get('label'))
             start_s = float(rec.get('trim_start_s', 0))
-            end_s = float(rec.get('trim_end', start_s))
+            end_s = float(rec.get('trim_end_s', start_s))
 
             if not filename:
                 continue
@@ -159,7 +159,7 @@ def process():
                 'src': os.path.relpath(src, _repo_root()),
                 'dst': os.path.relpath(dst, _repo_root()),
                 'trim_start_s': start_s,
-                'trim_end': end_s,
+                'trim_end_s': end_s,
                 'duration_s': round(dur_written, 3),
                 'sample_rate': SAMPLE_RATE,
                 'dtype': DTYPE,
