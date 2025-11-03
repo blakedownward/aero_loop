@@ -1,7 +1,7 @@
 data/processed/*
 data/raw/*
-data/zenodo/*
-data/edge-impulse/*
+data/zenodo/
+data/edge-impulse/
 
 .idea/
 
