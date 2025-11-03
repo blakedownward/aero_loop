@@ -1,5 +1,7 @@
 data/processed/*
 data/raw/*
+data/zenodo/*
+data/edge-impulse/*
 
 .idea/
 
@@ -17,3 +19,5 @@ __pycache__/
 
 # OS/editor noise
 .DS_Store
+
+.env

@@ -12,7 +12,7 @@ double-processing across runs.
 import os
 import csv
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict, Tuple
 
 import librosa
@@ -33,6 +33,7 @@ PROC_PATH = os.path.join(_repo_root(), 'data', 'processed')
 AIR_PATH = os.path.join(PROC_PATH, 'aircraft')
 NEG_PATH = os.path.join(PROC_PATH, 'negative')
 LABELS_CSV = os.path.join(PROC_PATH, 'labels.csv')
+RUN_LOG_CSV = os.path.join(PROC_PATH, 'run_log.csv')
 
 
 def ensure_dirs():
@@ -59,6 +60,19 @@ def append_label_row(row: Dict):
         fieldnames = [
             'timestamp', 'batch', 'filename', 'class', 'src', 'dst',
             'trim_start_s', 'trim_end_s', 'duration_s', 'sample_rate', 'dtype'
+        ]
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(row)
+
+
+def append_run_log(row: Dict):
+    file_exists = os.path.isfile(RUN_LOG_CSV)
+    with open(RUN_LOG_CSV, 'a', newline='', encoding='utf-8') as f:
+        fieldnames = [
+            'run_timestamp', 'batches_count', 'annotated_count', 'processed_count',
+            'aircraft_pre_s', 'aircraft_post_s', 'negative_pre_s', 'negative_post_s'
         ]
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         if not file_exists:
@@ -94,8 +108,44 @@ def class_dir(label_bool: bool) -> str:
 
 
 def out_filename(batch: str, filename: str) -> str:
-    # prefix with batch to reduce collision risk
-    return f"{batch}__{filename}"
+    """Build normalized destination filename per requirements.
+
+    Format: "<id6>_<YYYY-MM-DD>_<HH-MM>.wav"
+
+    - <id6> is first 6 characters of original filename (e.g., hex code or 000000)
+    - Date is derived from the batch date, rolling over to next day when
+      the file's time-of-day is earlier than the batch's start time-of-day.
+    - Any suffix after the time portion in the original filename is dropped.
+    """
+    try:
+        # Parse batch start for rollover logic
+        batch_dt = datetime.strptime(batch, '%Y-%m-%d_%H-%M')
+        batch_tod = (batch_dt.hour, batch_dt.minute)
+
+        base = os.path.basename(filename)
+        name, _ext = os.path.splitext(base)
+        parts = name.split('_')
+        # Expect patterns like: ID6_DATE_TIME_[...]
+        id6 = parts[0][:6] if parts and len(parts[0]) >= 6 else (parts[0] if parts else '000000')
+        date_str = parts[1] if len(parts) > 1 else batch_dt.strftime('%Y-%m-%d')
+        time_str = parts[2] if len(parts) > 2 else batch_dt.strftime('%H-%M')
+
+        # Parse time-of-day from file
+        try:
+            f_hour, f_minute = map(int, time_str.split('-'))
+        except Exception:
+            f_hour, f_minute = batch_tod
+
+        # Determine corrected date based on rollover rule
+        file_tod = (f_hour, f_minute)
+        corrected_date = batch_dt.date()
+        if file_tod < batch_tod:
+            corrected_date = (batch_dt + timedelta(days=1)).date()
+
+        return f"{id6}_{corrected_date.isoformat()}_{f_hour:02d}-{f_minute:02d}.wav"
+    except Exception:
+        # Fallback to batch-prefixed original name if parsing fails
+        return f"{batch}__{os.path.basename(filename)}"
 
 
 def trim_wav(src: str, dst: str, start_s: float, end_s: float) -> Tuple[bool, float]:
@@ -124,6 +174,12 @@ def process():
         print('No completed annotation batches found. Nothing to process.')
         return
 
+    # Metrics for run summary
+    annotated_count = 0
+    processed_count = 0
+    pre_s = {'aircraft': 0.0, 'negative': 0.0}
+    post_s = {'aircraft': 0.0, 'negative': 0.0}
+
     for batch in batches:
         ann = load_annotations(batch)
         batch_dir = os.path.join(RAW_PATH, batch)
@@ -132,8 +188,18 @@ def process():
             label_bool = bool(rec.get('label'))
             start_s = float(rec.get('trim_start_s', 0))
             end_s = float(rec.get('trim_end_s', start_s))
+            flagged = bool(rec.get('flag', False))
 
             if not filename:
+                continue
+
+            # Count all annotated entries for this run (includes flagged)
+            annotated_count += 1
+            cls_name = 'aircraft' if label_bool else 'negative'
+            pre_s[cls_name] += max(0.0, end_s - start_s)
+
+            # Skip flagged entries entirely
+            if flagged:
                 continue
 
             # skip if already logged
@@ -145,7 +211,20 @@ def process():
                 continue
 
             dest_dir = class_dir(label_bool)
-            dst = os.path.join(dest_dir, out_filename(batch, filename))
+            # Compute normalized destination name
+            dst_name = out_filename(batch, filename)
+            dst = os.path.join(dest_dir, dst_name)
+
+            # Ensure unique filename if collision
+            if os.path.exists(dst):
+                stem, ext = os.path.splitext(dst_name)
+                i = 1
+                while True:
+                    cand = os.path.join(dest_dir, f"{stem}-{i}{ext}")
+                    if not os.path.exists(cand):
+                        dst = cand
+                        break
+                    i += 1
 
             ok, dur_written = trim_wav(src, dst, start_s, end_s)
             if not ok:
@@ -166,6 +245,21 @@ def process():
             }
             append_label_row(row)
             processed_idx.add((batch, filename))
+            processed_count += 1
+            post_s[cls_name] += float(dur_written)
+
+    # Emit run summary
+    run_row = {
+        'run_timestamp': datetime.utcnow().isoformat(timespec='seconds') + 'Z',
+        'batches_count': len(batches),
+        'annotated_count': annotated_count,
+        'processed_count': processed_count,
+        'aircraft_pre_s': round(pre_s['aircraft'], 3),
+        'aircraft_post_s': round(post_s['aircraft'], 3),
+        'negative_pre_s': round(pre_s['negative'], 3),
+        'negative_post_s': round(post_s['negative'], 3),
+    }
+    append_run_log(run_row)
 
     print('Processing complete.')
 

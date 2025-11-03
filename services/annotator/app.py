@@ -132,6 +132,7 @@ def _render_all_done():
             ok, msg = _run_processor()
         if ok:
             st.success("Processing complete. Outputs in data/processed.")
+            _show_processing_logs()
         else:
             st.error(f"Processing failed: {msg}")
 
@@ -146,6 +147,59 @@ def _run_processor():
         return True, "ok"
     except Exception as e:
         return False, str(e)
+
+
+def _show_processing_logs():
+    """Display latest processing run summary and recent label rows."""
+    proc_dir = os.path.join(REPO_ROOT, 'data', 'processed')
+    run_log_csv = os.path.join(proc_dir, 'run_log.csv')
+    labels_csv = os.path.join(proc_dir, 'labels.csv')
+
+    st.subheader("Processing Summary")
+    if os.path.isfile(run_log_csv):
+        try:
+            df = pd.read_csv(run_log_csv)
+            if not df.empty:
+                last = df.tail(1).reset_index(drop=True)
+                # Coerce seconds to int for display
+                sec_cols = [
+                    'aircraft_pre_s','aircraft_post_s','negative_pre_s','negative_post_s'
+                ]
+                for c in sec_cols:
+                    if c in last.columns:
+                        last[c] = pd.to_numeric(last[c], errors='coerce').fillna(0).astype(int)
+
+                # Compute class counts for this run from labels.csv tail(processed_count)
+                if os.path.isfile(labels_csv) and 'processed_count' in last.columns:
+                    try:
+                        n = int(pd.to_numeric(last.loc[0, 'processed_count'], errors='coerce'))
+                    except Exception:
+                        n = 0
+                    if n > 0:
+                        try:
+                            dfl = pd.read_csv(labels_csv)
+                            tail = dfl.tail(n)
+                            ac = int((tail['class'] == 'aircraft').sum()) if 'class' in tail.columns else 0
+                            nc = int((tail['class'] == 'negative').sum()) if 'class' in tail.columns else 0
+                            last['aircraft_count'] = ac
+                            last['negative_count'] = nc
+                        except Exception:
+                            # Ignore counting errors; just skip counts
+                            pass
+
+                cols = [
+                    'run_timestamp','batches_count','annotated_count','processed_count',
+                    'aircraft_pre_s','aircraft_post_s','negative_pre_s','negative_post_s',
+                    'aircraft_count','negative_count'
+                ]
+                present = [c for c in cols if c in last.columns]
+                st.table(last[present])
+            else:
+                st.info("No summary rows found in run_log.csv yet.")
+        except Exception as e:
+            st.warning(f"Could not read run_log.csv: {e}")
+    else:
+        st.info("run_log.csv not found yet.")
 
 
 # Handle case of no batches

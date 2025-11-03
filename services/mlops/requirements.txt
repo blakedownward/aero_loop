@@ -1,3 +1,4 @@
 scipy
 librosa
 soundfile
+edgeimpulse-api
