@@ -1,4 +1,9 @@
 scipy
+numpy
 librosa
 soundfile
 edgeimpulse-api
+paramiko
+requests
+python-dotenv
+edgeimpulse

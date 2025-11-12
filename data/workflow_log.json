@@ -1,0 +1,851 @@
+[
+  {
+    "timestamp": "2025-11-10T22:03:54.218540Z",
+    "step": "workflow_complete",
+    "status": "partial",
+    "message": null,
+    "data": {
+      "success": false,
+      "steps_completed": 0,
+      "steps_total": 1,
+      "results": {
+        "download_and_evaluate": {
+          "success": false,
+          "error": "module 'edgeimpulse.experimental' has no attribute 'learning'",
+          "model_path": null,
+          "model_filename": null
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-10T22:09:14.282440Z",
+    "step": "workflow_complete",
+    "status": "partial",
+    "message": null,
+    "data": {
+      "success": false,
+      "steps_completed": 0,
+      "steps_total": 1,
+      "results": {
+        "download_and_evaluate": {
+          "success": false,
+          "error": "500 Server Error: Internal Server Error for url: https://studio.edgeimpulse.com/v1/api/815690/deployment/download?type=tflite",
+          "model_path": null,
+          "model_filename": null
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-10T22:21:53.963642Z",
+    "step": "workflow_complete",
+    "status": "partial",
+    "message": null,
+    "data": {
+      "success": false,
+      "steps_completed": 0,
+      "steps_total": 1,
+      "results": {
+        "download_and_evaluate": {
+          "success": false,
+          "error": "500 Server Error: Internal Server Error for url: https://studio.edgeimpulse.com/v1/api/815690/deployment/download?type=zip&modelType=float32&engine=tflite",
+          "model_path": null,
+          "model_filename": null
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-10T23:22:17.788045Z",
+    "step": "deploy_model",
+    "status": "failed",
+    "message": "Upload failed: main.<locals>.print_progress() takes 1 positional argument but 2 were given",
+    "data": {
+      "success": false,
+      "error": "Upload failed: main.<locals>.print_progress() takes 1 positional argument but 2 were given",
+      "model_filename": null
+    }
+  },
+  {
+    "timestamp": "2025-11-10T23:22:17.789496Z",
+    "step": "workflow_complete",
+    "status": "partial",
+    "message": null,
+    "data": {
+      "success": false,
+      "steps_completed": 0,
+      "steps_total": 1,
+      "results": {
+        "deploy_model": {
+          "success": false,
+          "error": "Upload failed: main.<locals>.print_progress() takes 1 positional argument but 2 were given",
+          "model_filename": null
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-11T04:49:33.405581+00:00",
+    "step": "upload_to_ei",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "uploaded": 48,
+      "skipped": 115,
+      "failed": 0,
+      "total": 163
+    }
+  },
+  {
+    "timestamp": "2025-11-11T05:07:57.857175+00:00",
+    "step": "train_model",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "job_id": 40041000,
+      "status": "completed",
+      "job": {
+        "id": 40041000,
+        "category": "Retraining model (Impulse #1)",
+        "categoryKey": "retrain-studio-wrapper",
+        "key": "retrain-studio-wrapper-1",
+        "created": "2025-11-11T04:49:34.844Z",
+        "started": "2025-11-11T04:49:39.000Z",
+        "finished": "2025-11-11T05:07:40.499Z",
+        "finishedSuccessful": true,
+        "jobNotificationUids": [],
+        "additionalInfo": "Impulse #1",
+        "computeTime": 1081
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-11T05:07:59.313736+00:00",
+    "step": "evaluate_model",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "evaluation": {
+        "is_better": true,
+        "is_best": true,
+        "reason": "First model evaluated",
+        "new_metrics": {
+          "accuracy": 99.07621247113164,
+          "loss": Infinity,
+          "f1_score": 0.0,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "best_metrics": {
+          "accuracy": 99.07621247113164,
+          "loss": Infinity,
+          "f1_score": 0.0,
+          "precision": 0.0,
+          "recall": 0.0
+        }
+      },
+      "model_metrics": {
+        "modelType": "float32",
+        "learnBlockType": "keras",
+        "learnBlockId": 3,
+        "confusionMatrix": {
+          "aircraft": {
+            "aircraft": {
+              "raw": 304
+            },
+            "negative": {
+              "raw": 2
+            }
+          },
+          "negative": {
+            "negative": {
+              "raw": 554
+            },
+            "aircraft": {
+              "raw": 5
+            },
+            "ei_uncertain": {
+              "raw": 1
+            }
+          }
+        },
+        "trainingLabels": [
+          "aircraft",
+          "negative"
+        ],
+        "classificationLabels": [
+          "aircraft",
+          "negative",
+          "ei_uncertain"
+        ],
+        "totalWindowCount": 866,
+        "totalCorrectWindowCount": {
+          "raw": 858,
+          "withAnomaly": 0
+        },
+        "accuracy": {
+          "raw": 99.07621247113164
+        }
+      },
+      "should_build": true,
+      "should_deploy": true
+    }
+  },
+  {
+    "timestamp": "2025-11-11T05:08:58.530555+00:00",
+    "step": "build_and_download",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "build": {
+        "success": true,
+        "error": null,
+        "job_id": 40041598,
+        "status": "started",
+        "response": {
+          "success": true,
+          "id": 40041598
+        }
+      },
+      "download": {
+        "success": true,
+        "error": null,
+        "model_path": "C:\\Users\\Blake\\Repos\\aero_loop\\models\\model_20251111_050855.tflite",
+        "model_filename": "model_20251111_050855.tflite",
+        "model_version": null,
+        "model_info": {
+          "success": true,
+          "impulse": {
+            "id": 1,
+            "name": "Impulse #1",
+            "inputBlocks": [
+              {
+                "id": 1,
+                "type": "time-series",
+                "name": "Time series",
+                "title": "Time series data",
+                "padZeros": true,
+                "windowSizeMs": 2000,
+                "windowIncreaseMs": 2000,
+                "frequencyHz": 16000,
+                "labelingMethodMultiLabel": {
+                  "type": "end-of-window"
+                },
+                "createdBy": "createImpulse",
+                "createdAt": "2025-11-02T04:03:16.559Z"
+              }
+            ],
+            "dspBlocks": [
+              {
+                "id": 4,
+                "type": "mfe",
+                "name": "MFE_2_SEC",
+                "axes": [
+                  "audio"
+                ],
+                "title": "Audio (MFE)",
+                "input": 1,
+                "implementationVersion": 4,
+                "namedAxes": [
+                  {
+                    "name": "Signal",
+                    "description": "The input signal to create an MFE spectrogram from",
+                    "required": true,
+                    "selectedAxis": "audio"
+                  }
+                ],
+                "createdBy": "createImpulse",
+                "createdAt": "2025-11-02T04:24:38.057Z"
+              }
+            ],
+            "learnBlocks": [
+              {
+                "id": 3,
+                "type": "keras",
+                "name": "Classifier",
+                "dsp": [
+                  4
+                ],
+                "title": "Classification",
+                "createdBy": "createImpulse",
+                "createdAt": "2025-11-02T04:03:16.559Z"
+              }
+            ],
+            "postProcessingBlocks": [],
+            "type": "default"
+          }
+        },
+        "model_metrics": {
+          "modelType": "float32",
+          "learnBlockType": "keras",
+          "learnBlockId": 3,
+          "confusionMatrix": {
+            "aircraft": {
+              "aircraft": {
+                "raw": 304
+              },
+              "negative": {
+                "raw": 2
+              }
+            },
+            "negative": {
+              "negative": {
+                "raw": 554
+              },
+              "aircraft": {
+                "raw": 5
+              },
+              "ei_uncertain": {
+                "raw": 1
+              }
+            }
+          },
+          "trainingLabels": [
+            "aircraft",
+            "negative"
+          ],
+          "classificationLabels": [
+            "aircraft",
+            "negative",
+            "ei_uncertain"
+          ],
+          "totalWindowCount": 866,
+          "totalCorrectWindowCount": {
+            "raw": 858,
+            "withAnomaly": 0
+          },
+          "accuracy": {
+            "raw": 99.07621247113164
+          }
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-11T05:08:59.643593+00:00",
+    "step": "deploy_model",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "model_filename": "model_20251111_050855.tflite"
+    }
+  },
+  {
+    "timestamp": "2025-11-11T05:08:59.656282+00:00",
+    "step": "workflow_complete",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "steps_completed": 5,
+      "steps_total": 5,
+      "results": {
+        "upload_to_ei": {
+          "success": true,
+          "error": null,
+          "uploaded": 48,
+          "skipped": 115,
+          "failed": 0,
+          "total": 163
+        },
+        "train_model": {
+          "success": true,
+          "error": null,
+          "job_id": 40041000,
+          "status": "completed",
+          "job": {
+            "id": 40041000,
+            "category": "Retraining model (Impulse #1)",
+            "categoryKey": "retrain-studio-wrapper",
+            "key": "retrain-studio-wrapper-1",
+            "created": "2025-11-11T04:49:34.844Z",
+            "started": "2025-11-11T04:49:39.000Z",
+            "finished": "2025-11-11T05:07:40.499Z",
+            "finishedSuccessful": true,
+            "jobNotificationUids": [],
+            "additionalInfo": "Impulse #1",
+            "computeTime": 1081
+          }
+        },
+        "evaluate_model": {
+          "success": true,
+          "evaluation": {
+            "is_better": true,
+            "is_best": true,
+            "reason": "First model evaluated",
+            "new_metrics": {
+              "accuracy": 99.07621247113164,
+              "loss": Infinity,
+              "f1_score": 0.0,
+              "precision": 0.0,
+              "recall": 0.0
+            },
+            "best_metrics": {
+              "accuracy": 99.07621247113164,
+              "loss": Infinity,
+              "f1_score": 0.0,
+              "precision": 0.0,
+              "recall": 0.0
+            }
+          },
+          "model_metrics": {
+            "modelType": "float32",
+            "learnBlockType": "keras",
+            "learnBlockId": 3,
+            "confusionMatrix": {
+              "aircraft": {
+                "aircraft": {
+                  "raw": 304
+                },
+                "negative": {
+                  "raw": 2
+                }
+              },
+              "negative": {
+                "negative": {
+                  "raw": 554
+                },
+                "aircraft": {
+                  "raw": 5
+                },
+                "ei_uncertain": {
+                  "raw": 1
+                }
+              }
+            },
+            "trainingLabels": [
+              "aircraft",
+              "negative"
+            ],
+            "classificationLabels": [
+              "aircraft",
+              "negative",
+              "ei_uncertain"
+            ],
+            "totalWindowCount": 866,
+            "totalCorrectWindowCount": {
+              "raw": 858,
+              "withAnomaly": 0
+            },
+            "accuracy": {
+              "raw": 99.07621247113164
+            }
+          },
+          "should_build": true,
+          "should_deploy": true
+        },
+        "build_and_download": {
+          "success": true,
+          "build": {
+            "success": true,
+            "error": null,
+            "job_id": 40041598,
+            "status": "started",
+            "response": {
+              "success": true,
+              "id": 40041598
+            }
+          },
+          "download": {
+            "success": true,
+            "error": null,
+            "model_path": "C:\\Users\\Blake\\Repos\\aero_loop\\models\\model_20251111_050855.tflite",
+            "model_filename": "model_20251111_050855.tflite",
+            "model_version": null,
+            "model_info": {
+              "success": true,
+              "impulse": {
+                "id": 1,
+                "name": "Impulse #1",
+                "inputBlocks": [
+                  {
+                    "id": 1,
+                    "type": "time-series",
+                    "name": "Time series",
+                    "title": "Time series data",
+                    "padZeros": true,
+                    "windowSizeMs": 2000,
+                    "windowIncreaseMs": 2000,
+                    "frequencyHz": 16000,
+                    "labelingMethodMultiLabel": {
+                      "type": "end-of-window"
+                    },
+                    "createdBy": "createImpulse",
+                    "createdAt": "2025-11-02T04:03:16.559Z"
+                  }
+                ],
+                "dspBlocks": [
+                  {
+                    "id": 4,
+                    "type": "mfe",
+                    "name": "MFE_2_SEC",
+                    "axes": [
+                      "audio"
+                    ],
+                    "title": "Audio (MFE)",
+                    "input": 1,
+                    "implementationVersion": 4,
+                    "namedAxes": [
+                      {
+                        "name": "Signal",
+                        "description": "The input signal to create an MFE spectrogram from",
+                        "required": true,
+                        "selectedAxis": "audio"
+                      }
+                    ],
+                    "createdBy": "createImpulse",
+                    "createdAt": "2025-11-02T04:24:38.057Z"
+                  }
+                ],
+                "learnBlocks": [
+                  {
+                    "id": 3,
+                    "type": "keras",
+                    "name": "Classifier",
+                    "dsp": [
+                      4
+                    ],
+                    "title": "Classification",
+                    "createdBy": "createImpulse",
+                    "createdAt": "2025-11-02T04:03:16.559Z"
+                  }
+                ],
+                "postProcessingBlocks": [],
+                "type": "default"
+              }
+            },
+            "model_metrics": {
+              "modelType": "float32",
+              "learnBlockType": "keras",
+              "learnBlockId": 3,
+              "confusionMatrix": {
+                "aircraft": {
+                  "aircraft": {
+                    "raw": 304
+                  },
+                  "negative": {
+                    "raw": 2
+                  }
+                },
+                "negative": {
+                  "negative": {
+                    "raw": 554
+                  },
+                  "aircraft": {
+                    "raw": 5
+                  },
+                  "ei_uncertain": {
+                    "raw": 1
+                  }
+                }
+              },
+              "trainingLabels": [
+                "aircraft",
+                "negative"
+              ],
+              "classificationLabels": [
+                "aircraft",
+                "negative",
+                "ei_uncertain"
+              ],
+              "totalWindowCount": 866,
+              "totalCorrectWindowCount": {
+                "raw": 858,
+                "withAnomaly": 0
+              },
+              "accuracy": {
+                "raw": 99.07621247113164
+              }
+            }
+          }
+        },
+        "deploy_model": {
+          "success": true,
+          "error": null,
+          "model_filename": "model_20251111_050855.tflite"
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-11T21:59:32.765818+00:00",
+    "step": "download_sessions",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "sessions_downloaded": 16,
+      "sessions_skipped": 11,
+      "total_files_downloaded": 200,
+      "total_files_skipped": 0
+    }
+  },
+  {
+    "timestamp": "2025-11-11T21:59:32.779856+00:00",
+    "step": "workflow_complete",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "steps_completed": 1,
+      "steps_total": 1,
+      "results": {
+        "download_sessions": {
+          "success": true,
+          "error": null,
+          "sessions_downloaded": 16,
+          "sessions_skipped": 11,
+          "total_files_downloaded": 200,
+          "total_files_skipped": 0
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-11T23:11:14.726266+00:00",
+    "step": "upload_to_ei",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "uploaded": 140,
+      "skipped": 163,
+      "failed": 0,
+      "total": 303
+    }
+  },
+  {
+    "timestamp": "2025-11-11T23:33:19.772247+00:00",
+    "step": "train_model",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "job_id": 40086834,
+      "status": "completed",
+      "job": {
+        "id": 40086834,
+        "category": "Retraining model (Impulse #1)",
+        "categoryKey": "retrain-studio-wrapper",
+        "key": "retrain-studio-wrapper-1",
+        "created": "2025-11-11T23:11:16.153Z",
+        "started": "2025-11-11T23:11:22.000Z",
+        "finished": "2025-11-11T23:33:12.315Z",
+        "finishedSuccessful": true,
+        "jobNotificationUids": [],
+        "additionalInfo": "Impulse #1",
+        "computeTime": 1310
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-11T23:33:21.279420+00:00",
+    "step": "evaluate_model",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "evaluation": {
+        "is_better": false,
+        "is_best": false,
+        "reason": "No improvement (acc: 98.3834 <= 99.0762, loss: inf >= inf)",
+        "new_metrics": {
+          "accuracy": 98.38337182448036,
+          "loss": Infinity,
+          "f1_score": 0.0,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "best_metrics": {
+          "accuracy": 99.07621247113164,
+          "loss": Infinity,
+          "f1_score": 0.0,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "best_model_filename": null
+      },
+      "model_metrics": {
+        "modelType": "float32",
+        "learnBlockType": "keras",
+        "learnBlockId": 3,
+        "confusionMatrix": {
+          "aircraft": {
+            "aircraft": {
+              "raw": 301
+            },
+            "negative": {
+              "raw": 4
+            },
+            "ei_uncertain": {
+              "raw": 1
+            }
+          },
+          "negative": {
+            "negative": {
+              "raw": 551
+            },
+            "aircraft": {
+              "raw": 6
+            },
+            "ei_uncertain": {
+              "raw": 3
+            }
+          }
+        },
+        "trainingLabels": [
+          "aircraft",
+          "negative"
+        ],
+        "classificationLabels": [
+          "aircraft",
+          "negative",
+          "ei_uncertain"
+        ],
+        "totalWindowCount": 866,
+        "totalCorrectWindowCount": {
+          "raw": 852,
+          "withAnomaly": 0
+        },
+        "accuracy": {
+          "raw": 98.38337182448036
+        }
+      },
+      "should_build": false,
+      "should_deploy": false
+    }
+  },
+  {
+    "timestamp": "2025-11-11T23:33:21.294013+00:00",
+    "step": "workflow_complete",
+    "status": "partial",
+    "message": null,
+    "data": {
+      "success": false,
+      "steps_completed": 3,
+      "steps_total": 5,
+      "results": {
+        "upload_to_ei": {
+          "success": true,
+          "error": null,
+          "uploaded": 140,
+          "skipped": 163,
+          "failed": 0,
+          "total": 303
+        },
+        "train_model": {
+          "success": true,
+          "error": null,
+          "job_id": 40086834,
+          "status": "completed",
+          "job": {
+            "id": 40086834,
+            "category": "Retraining model (Impulse #1)",
+            "categoryKey": "retrain-studio-wrapper",
+            "key": "retrain-studio-wrapper-1",
+            "created": "2025-11-11T23:11:16.153Z",
+            "started": "2025-11-11T23:11:22.000Z",
+            "finished": "2025-11-11T23:33:12.315Z",
+            "finishedSuccessful": true,
+            "jobNotificationUids": [],
+            "additionalInfo": "Impulse #1",
+            "computeTime": 1310
+          }
+        },
+        "evaluate_model": {
+          "success": true,
+          "evaluation": {
+            "is_better": false,
+            "is_best": false,
+            "reason": "No improvement (acc: 98.3834 <= 99.0762, loss: inf >= inf)",
+            "new_metrics": {
+              "accuracy": 98.38337182448036,
+              "loss": Infinity,
+              "f1_score": 0.0,
+              "precision": 0.0,
+              "recall": 0.0
+            },
+            "best_metrics": {
+              "accuracy": 99.07621247113164,
+              "loss": Infinity,
+              "f1_score": 0.0,
+              "precision": 0.0,
+              "recall": 0.0
+            },
+            "best_model_filename": null
+          },
+          "model_metrics": {
+            "modelType": "float32",
+            "learnBlockType": "keras",
+            "learnBlockId": 3,
+            "confusionMatrix": {
+              "aircraft": {
+                "aircraft": {
+                  "raw": 301
+                },
+                "negative": {
+                  "raw": 4
+                },
+                "ei_uncertain": {
+                  "raw": 1
+                }
+              },
+              "negative": {
+                "negative": {
+                  "raw": 551
+                },
+                "aircraft": {
+                  "raw": 6
+                },
+                "ei_uncertain": {
+                  "raw": 3
+                }
+              }
+            },
+            "trainingLabels": [
+              "aircraft",
+              "negative"
+            ],
+            "classificationLabels": [
+              "aircraft",
+              "negative",
+              "ei_uncertain"
+            ],
+            "totalWindowCount": 866,
+            "totalCorrectWindowCount": {
+              "raw": 852,
+              "withAnomaly": 0
+            },
+            "accuracy": {
+              "raw": 98.38337182448036
+            }
+          },
+          "should_build": false,
+          "should_deploy": false
+        },
+        "build_and_download": {
+          "success": false,
+          "error": "Model did not improve, skipping build and download",
+          "skipped": true
+        },
+        "deploy_model": {
+          "success": false,
+          "error": "Model did not improve, skipping deployment",
+          "skipped": true
+        }
+      }
+    }
+  }
+]

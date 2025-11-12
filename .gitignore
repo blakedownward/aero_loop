@@ -3,9 +3,12 @@ data/raw/*
 data/zenodo/
 data/edge-impulse/
 
+models/*
+
 .idea/
 
 venv/
+pivenv/
 
 # Python bytecode/cache
 __pycache__/

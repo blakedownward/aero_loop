@@ -1,0 +1,40 @@
+{
+  "40006368": {
+    "started_at": "2025-11-10T07:57:58.875677Z",
+    "job_id": 40006368,
+    "status": "completed",
+    "api_response": {
+      "id": 40006368,
+      "category": "Retraining model (Impulse #1)",
+      "categoryKey": "retrain-studio-wrapper",
+      "key": "retrain-studio-wrapper-1",
+      "created": "2025-11-10T07:57:59.014Z",
+      "started": "2025-11-10T07:58:04.000Z",
+      "finished": "2025-11-10T08:26:57.832Z",
+      "finishedSuccessful": true,
+      "jobNotificationUids": [],
+      "additionalInfo": "Impulse #1",
+      "computeTime": 1734
+    },
+    "last_checked": "2025-11-10T22:29:52.286458+00:00",
+    "completed_at": "2025-11-10T22:29:52.286484+00:00"
+  },
+  "40041000": {
+    "started_at": "2025-11-11T04:49:34.961115+00:00",
+    "job_id": 40041000,
+    "status": "started",
+    "api_response": {
+      "success": true,
+      "id": 40041000
+    }
+  },
+  "40086834": {
+    "started_at": "2025-11-11T23:11:16.222636+00:00",
+    "job_id": 40086834,
+    "status": "started",
+    "api_response": {
+      "success": true,
+      "id": 40086834
+    }
+  }
+}
