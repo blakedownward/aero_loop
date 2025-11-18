@@ -847,5 +847,857 @@
         }
       }
     }
+  },
+  {
+    "timestamp": "2025-11-12T22:22:34.202746+00:00",
+    "step": "download_sessions",
+    "status": "failed",
+    "message": "Connection error: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond",
+    "data": {
+      "success": false,
+      "error": "Connection error: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond",
+      "sessions_downloaded": 0,
+      "sessions_skipped": 0,
+      "total_files_downloaded": 0,
+      "total_files_skipped": 0
+    }
+  },
+  {
+    "timestamp": "2025-11-12T22:22:34.206295+00:00",
+    "step": "workflow_complete",
+    "status": "partial",
+    "message": null,
+    "data": {
+      "success": false,
+      "steps_completed": 0,
+      "steps_total": 1,
+      "results": {
+        "download_sessions": {
+          "success": false,
+          "error": "Connection error: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond",
+          "sessions_downloaded": 0,
+          "sessions_skipped": 0,
+          "total_files_downloaded": 0,
+          "total_files_skipped": 0
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-12T22:38:48.059073+00:00",
+    "step": "download_sessions",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "sessions_downloaded": 8,
+      "sessions_skipped": 28,
+      "total_files_downloaded": 56,
+      "total_files_skipped": 0
+    }
+  },
+  {
+    "timestamp": "2025-11-12T22:38:48.061633+00:00",
+    "step": "workflow_complete",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "steps_completed": 1,
+      "steps_total": 1,
+      "results": {
+        "download_sessions": {
+          "success": true,
+          "error": null,
+          "sessions_downloaded": 8,
+          "sessions_skipped": 28,
+          "total_files_downloaded": 56,
+          "total_files_skipped": 0
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-12T22:57:06.438297+00:00",
+    "step": "upload_to_ei",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "uploaded": 31,
+      "skipped": 303,
+      "failed": 0,
+      "total": 334
+    }
+  },
+  {
+    "timestamp": "2025-11-12T23:01:20.542148+00:00",
+    "step": "train_model",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "job_id": 40134716,
+      "status": "completed",
+      "job": {
+        "id": 40134716,
+        "category": "Retraining model (Impulse #1)",
+        "categoryKey": "retrain-studio-wrapper",
+        "key": "retrain-studio-wrapper-1",
+        "created": "2025-11-12T22:57:07.406Z",
+        "started": "2025-11-12T22:57:12.000Z",
+        "finished": "2025-11-12T23:01:18.812Z",
+        "finishedSuccessful": true,
+        "jobNotificationUids": [],
+        "additionalInfo": "Impulse #1",
+        "computeTime": 247
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-12T23:01:21.416118+00:00",
+    "step": "evaluate_model",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "evaluation": {
+        "is_better": false,
+        "is_best": false,
+        "reason": "No improvement (acc: 98.9607 <= 99.0762, loss: inf >= inf)",
+        "new_metrics": {
+          "accuracy": 98.96073903002309,
+          "loss": Infinity,
+          "f1_score": 0.0,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "best_metrics": {
+          "accuracy": 99.07621247113164,
+          "loss": Infinity,
+          "f1_score": 0.0,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "best_model_filename": null
+      },
+      "model_metrics": {
+        "modelType": "float32",
+        "learnBlockType": "keras",
+        "learnBlockId": 3,
+        "confusionMatrix": {
+          "aircraft": {
+            "aircraft": {
+              "raw": 305
+            },
+            "negative": {
+              "raw": 1
+            }
+          },
+          "negative": {
+            "negative": {
+              "raw": 552
+            },
+            "aircraft": {
+              "raw": 8
+            }
+          }
+        },
+        "trainingLabels": [
+          "aircraft",
+          "negative"
+        ],
+        "classificationLabels": [
+          "aircraft",
+          "negative",
+          "ei_uncertain"
+        ],
+        "totalWindowCount": 866,
+        "totalCorrectWindowCount": {
+          "raw": 857,
+          "withAnomaly": 0
+        },
+        "accuracy": {
+          "raw": 98.96073903002309
+        }
+      },
+      "should_build": false,
+      "should_deploy": false
+    }
+  },
+  {
+    "timestamp": "2025-11-12T23:01:21.431797+00:00",
+    "step": "workflow_complete",
+    "status": "partial",
+    "message": null,
+    "data": {
+      "success": false,
+      "steps_completed": 3,
+      "steps_total": 5,
+      "results": {
+        "upload_to_ei": {
+          "success": true,
+          "error": null,
+          "uploaded": 31,
+          "skipped": 303,
+          "failed": 0,
+          "total": 334
+        },
+        "train_model": {
+          "success": true,
+          "error": null,
+          "job_id": 40134716,
+          "status": "completed",
+          "job": {
+            "id": 40134716,
+            "category": "Retraining model (Impulse #1)",
+            "categoryKey": "retrain-studio-wrapper",
+            "key": "retrain-studio-wrapper-1",
+            "created": "2025-11-12T22:57:07.406Z",
+            "started": "2025-11-12T22:57:12.000Z",
+            "finished": "2025-11-12T23:01:18.812Z",
+            "finishedSuccessful": true,
+            "jobNotificationUids": [],
+            "additionalInfo": "Impulse #1",
+            "computeTime": 247
+          }
+        },
+        "evaluate_model": {
+          "success": true,
+          "evaluation": {
+            "is_better": false,
+            "is_best": false,
+            "reason": "No improvement (acc: 98.9607 <= 99.0762, loss: inf >= inf)",
+            "new_metrics": {
+              "accuracy": 98.96073903002309,
+              "loss": Infinity,
+              "f1_score": 0.0,
+              "precision": 0.0,
+              "recall": 0.0
+            },
+            "best_metrics": {
+              "accuracy": 99.07621247113164,
+              "loss": Infinity,
+              "f1_score": 0.0,
+              "precision": 0.0,
+              "recall": 0.0
+            },
+            "best_model_filename": null
+          },
+          "model_metrics": {
+            "modelType": "float32",
+            "learnBlockType": "keras",
+            "learnBlockId": 3,
+            "confusionMatrix": {
+              "aircraft": {
+                "aircraft": {
+                  "raw": 305
+                },
+                "negative": {
+                  "raw": 1
+                }
+              },
+              "negative": {
+                "negative": {
+                  "raw": 552
+                },
+                "aircraft": {
+                  "raw": 8
+                }
+              }
+            },
+            "trainingLabels": [
+              "aircraft",
+              "negative"
+            ],
+            "classificationLabels": [
+              "aircraft",
+              "negative",
+              "ei_uncertain"
+            ],
+            "totalWindowCount": 866,
+            "totalCorrectWindowCount": {
+              "raw": 857,
+              "withAnomaly": 0
+            },
+            "accuracy": {
+              "raw": 98.96073903002309
+            }
+          },
+          "should_build": false,
+          "should_deploy": false
+        },
+        "build_and_download": {
+          "success": false,
+          "error": "Model did not improve, skipping build and download",
+          "skipped": true
+        },
+        "deploy_model": {
+          "success": false,
+          "error": "Model did not improve, skipping deployment",
+          "skipped": true
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-16T01:52:18.940072+00:00",
+    "step": "download_sessions",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "sessions_downloaded": 14,
+      "sessions_skipped": 36,
+      "total_files_downloaded": 174,
+      "total_files_skipped": 0
+    }
+  },
+  {
+    "timestamp": "2025-11-16T01:52:18.972003+00:00",
+    "step": "workflow_complete",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "steps_completed": 1,
+      "steps_total": 1,
+      "results": {
+        "download_sessions": {
+          "success": true,
+          "error": null,
+          "sessions_downloaded": 14,
+          "sessions_skipped": 36,
+          "total_files_downloaded": 174,
+          "total_files_skipped": 0
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-16T02:55:45.190792+00:00",
+    "step": "download_sessions",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "sessions_downloaded": 1,
+      "sessions_skipped": 50,
+      "total_files_downloaded": 23,
+      "total_files_skipped": 0
+    }
+  },
+  {
+    "timestamp": "2025-11-16T02:55:45.211305+00:00",
+    "step": "workflow_complete",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "steps_completed": 1,
+      "steps_total": 1,
+      "results": {
+        "download_sessions": {
+          "success": true,
+          "error": null,
+          "sessions_downloaded": 1,
+          "sessions_skipped": 50,
+          "total_files_downloaded": 23,
+          "total_files_skipped": 0
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-16T03:03:13.788394+00:00",
+    "step": "download_sessions",
+    "status": "failed",
+    "message": "Connection error: [Errno 11001] getaddrinfo failed",
+    "data": {
+      "success": false,
+      "error": "Connection error: [Errno 11001] getaddrinfo failed",
+      "sessions_downloaded": 0,
+      "sessions_skipped": 0,
+      "total_files_downloaded": 0,
+      "total_files_skipped": 0
+    }
+  },
+  {
+    "timestamp": "2025-11-16T03:03:13.810495+00:00",
+    "step": "workflow_complete",
+    "status": "partial",
+    "message": null,
+    "data": {
+      "success": false,
+      "steps_completed": 0,
+      "steps_total": 1,
+      "results": {
+        "download_sessions": {
+          "success": false,
+          "error": "Connection error: [Errno 11001] getaddrinfo failed",
+          "sessions_downloaded": 0,
+          "sessions_skipped": 0,
+          "total_files_downloaded": 0,
+          "total_files_skipped": 0
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-16T03:19:25.842545+00:00",
+    "step": "upload_to_ei",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "uploaded": 150,
+      "skipped": 334,
+      "failed": 0,
+      "total": 484
+    }
+  },
+  {
+    "timestamp": "2025-11-16T03:19:27.381518+00:00",
+    "step": "train_model",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "job_id": 40260789,
+      "status": "started"
+    }
+  },
+  {
+    "timestamp": "2025-11-16T03:19:28.941692+00:00",
+    "step": "evaluate_model",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "evaluation": {
+        "is_better": false,
+        "is_best": false,
+        "reason": "No improvement (acc: 98.9607 <= 99.0762, loss: inf >= inf)",
+        "new_metrics": {
+          "accuracy": 98.96073903002309,
+          "loss": Infinity,
+          "f1_score": 0.0,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "best_metrics": {
+          "accuracy": 99.07621247113164,
+          "loss": Infinity,
+          "f1_score": 0.0,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "best_model_filename": null
+      },
+      "model_metrics": {
+        "modelType": "float32",
+        "learnBlockType": "keras",
+        "learnBlockId": 3,
+        "confusionMatrix": {
+          "aircraft": {
+            "aircraft": {
+              "raw": 304
+            },
+            "negative": {
+              "raw": 2
+            }
+          },
+          "negative": {
+            "negative": {
+              "raw": 553
+            },
+            "aircraft": {
+              "raw": 4
+            },
+            "ei_uncertain": {
+              "raw": 3
+            }
+          }
+        },
+        "trainingLabels": [
+          "aircraft",
+          "negative"
+        ],
+        "classificationLabels": [
+          "aircraft",
+          "negative",
+          "ei_uncertain"
+        ],
+        "totalWindowCount": 866,
+        "totalCorrectWindowCount": {
+          "raw": 857,
+          "withAnomaly": 0
+        },
+        "accuracy": {
+          "raw": 98.96073903002309
+        }
+      },
+      "should_build": false,
+      "should_deploy": false
+    }
+  },
+  {
+    "timestamp": "2025-11-16T03:19:28.963610+00:00",
+    "step": "workflow_complete",
+    "status": "partial",
+    "message": null,
+    "data": {
+      "success": false,
+      "steps_completed": 3,
+      "steps_total": 5,
+      "results": {
+        "upload_to_ei": {
+          "success": true,
+          "error": null,
+          "uploaded": 150,
+          "skipped": 334,
+          "failed": 0,
+          "total": 484
+        },
+        "train_model": {
+          "success": true,
+          "error": null,
+          "job_id": 40260789,
+          "status": "started"
+        },
+        "evaluate_model": {
+          "success": true,
+          "evaluation": {
+            "is_better": false,
+            "is_best": false,
+            "reason": "No improvement (acc: 98.9607 <= 99.0762, loss: inf >= inf)",
+            "new_metrics": {
+              "accuracy": 98.96073903002309,
+              "loss": Infinity,
+              "f1_score": 0.0,
+              "precision": 0.0,
+              "recall": 0.0
+            },
+            "best_metrics": {
+              "accuracy": 99.07621247113164,
+              "loss": Infinity,
+              "f1_score": 0.0,
+              "precision": 0.0,
+              "recall": 0.0
+            },
+            "best_model_filename": null
+          },
+          "model_metrics": {
+            "modelType": "float32",
+            "learnBlockType": "keras",
+            "learnBlockId": 3,
+            "confusionMatrix": {
+              "aircraft": {
+                "aircraft": {
+                  "raw": 304
+                },
+                "negative": {
+                  "raw": 2
+                }
+              },
+              "negative": {
+                "negative": {
+                  "raw": 553
+                },
+                "aircraft": {
+                  "raw": 4
+                },
+                "ei_uncertain": {
+                  "raw": 3
+                }
+              }
+            },
+            "trainingLabels": [
+              "aircraft",
+              "negative"
+            ],
+            "classificationLabels": [
+              "aircraft",
+              "negative",
+              "ei_uncertain"
+            ],
+            "totalWindowCount": 866,
+            "totalCorrectWindowCount": {
+              "raw": 857,
+              "withAnomaly": 0
+            },
+            "accuracy": {
+              "raw": 98.96073903002309
+            }
+          },
+          "should_build": false,
+          "should_deploy": false
+        },
+        "build_and_download": {
+          "success": false,
+          "error": "Model did not improve, skipping build and download",
+          "skipped": true
+        },
+        "deploy_model": {
+          "success": false,
+          "error": "Model did not improve, skipping deployment",
+          "skipped": true
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-18T02:19:11.591002+00:00",
+    "step": "process_annotations",
+    "status": "completed",
+    "message": null,
+    "data": {}
+  },
+  {
+    "timestamp": "2025-11-18T02:26:00.601693+00:00",
+    "step": "upload_to_ei",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "uploaded": 83,
+      "skipped": 484,
+      "failed": 0,
+      "total": 567
+    }
+  },
+  {
+    "timestamp": "2025-11-18T02:37:04.016364+00:00",
+    "step": "train_model",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "error": null,
+      "job_id": 40376143,
+      "status": "completed",
+      "job": {
+        "id": 40376143,
+        "category": "Retraining model (Impulse #1)",
+        "categoryKey": "retrain-studio-wrapper",
+        "key": "retrain-studio-wrapper-1",
+        "created": "2025-11-18T02:26:01.184Z",
+        "started": "2025-11-18T02:26:05.000Z",
+        "finished": "2025-11-18T02:36:35.964Z",
+        "finishedSuccessful": true,
+        "jobNotificationUids": [],
+        "additionalInfo": "Impulse #1",
+        "computeTime": 631
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-18T02:37:04.949433+00:00",
+    "step": "evaluate_model",
+    "status": "completed",
+    "message": null,
+    "data": {
+      "success": true,
+      "evaluation": {
+        "is_better": false,
+        "is_best": false,
+        "reason": "No improvement (acc: 98.4988 <= 99.0762, loss: inf >= inf)",
+        "new_metrics": {
+          "accuracy": 98.49884526558891,
+          "loss": Infinity,
+          "f1_score": 0.0,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "best_metrics": {
+          "accuracy": 99.07621247113164,
+          "loss": Infinity,
+          "f1_score": 0.0,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "best_model_filename": null
+      },
+      "model_metrics": {
+        "modelType": "float32",
+        "learnBlockType": "keras",
+        "learnBlockId": 3,
+        "confusionMatrix": {
+          "aircraft": {
+            "aircraft": {
+              "raw": 304
+            },
+            "negative": {
+              "raw": 1
+            },
+            "ei_uncertain": {
+              "raw": 1
+            }
+          },
+          "negative": {
+            "negative": {
+              "raw": 549
+            },
+            "aircraft": {
+              "raw": 6
+            },
+            "ei_uncertain": {
+              "raw": 5
+            }
+          }
+        },
+        "trainingLabels": [
+          "aircraft",
+          "negative"
+        ],
+        "classificationLabels": [
+          "aircraft",
+          "negative",
+          "ei_uncertain"
+        ],
+        "totalWindowCount": 866,
+        "totalCorrectWindowCount": {
+          "raw": 853,
+          "withAnomaly": 0
+        },
+        "accuracy": {
+          "raw": 98.49884526558891
+        }
+      },
+      "should_build": false,
+      "should_deploy": false
+    }
+  },
+  {
+    "timestamp": "2025-11-18T02:37:04.969724+00:00",
+    "step": "workflow_complete",
+    "status": "partial",
+    "message": null,
+    "data": {
+      "success": false,
+      "steps_completed": 4,
+      "steps_total": 6,
+      "results": {
+        "process_annotations": {
+          "success": true
+        },
+        "upload_to_ei": {
+          "success": true,
+          "error": null,
+          "uploaded": 83,
+          "skipped": 484,
+          "failed": 0,
+          "total": 567
+        },
+        "train_model": {
+          "success": true,
+          "error": null,
+          "job_id": 40376143,
+          "status": "completed",
+          "job": {
+            "id": 40376143,
+            "category": "Retraining model (Impulse #1)",
+            "categoryKey": "retrain-studio-wrapper",
+            "key": "retrain-studio-wrapper-1",
+            "created": "2025-11-18T02:26:01.184Z",
+            "started": "2025-11-18T02:26:05.000Z",
+            "finished": "2025-11-18T02:36:35.964Z",
+            "finishedSuccessful": true,
+            "jobNotificationUids": [],
+            "additionalInfo": "Impulse #1",
+            "computeTime": 631
+          }
+        },
+        "evaluate_model": {
+          "success": true,
+          "evaluation": {
+            "is_better": false,
+            "is_best": false,
+            "reason": "No improvement (acc: 98.4988 <= 99.0762, loss: inf >= inf)",
+            "new_metrics": {
+              "accuracy": 98.49884526558891,
+              "loss": Infinity,
+              "f1_score": 0.0,
+              "precision": 0.0,
+              "recall": 0.0
+            },
+            "best_metrics": {
+              "accuracy": 99.07621247113164,
+              "loss": Infinity,
+              "f1_score": 0.0,
+              "precision": 0.0,
+              "recall": 0.0
+            },
+            "best_model_filename": null
+          },
+          "model_metrics": {
+            "modelType": "float32",
+            "learnBlockType": "keras",
+            "learnBlockId": 3,
+            "confusionMatrix": {
+              "aircraft": {
+                "aircraft": {
+                  "raw": 304
+                },
+                "negative": {
+                  "raw": 1
+                },
+                "ei_uncertain": {
+                  "raw": 1
+                }
+              },
+              "negative": {
+                "negative": {
+                  "raw": 549
+                },
+                "aircraft": {
+                  "raw": 6
+                },
+                "ei_uncertain": {
+                  "raw": 5
+                }
+              }
+            },
+            "trainingLabels": [
+              "aircraft",
+              "negative"
+            ],
+            "classificationLabels": [
+              "aircraft",
+              "negative",
+              "ei_uncertain"
+            ],
+            "totalWindowCount": 866,
+            "totalCorrectWindowCount": {
+              "raw": 853,
+              "withAnomaly": 0
+            },
+            "accuracy": {
+              "raw": 98.49884526558891
+            }
+          },
+          "should_build": false,
+          "should_deploy": false
+        },
+        "build_and_download": {
+          "success": false,
+          "error": "Model did not improve, skipping build and download",
+          "skipped": true
+        },
+        "deploy_model": {
+          "success": false,
+          "error": "Model did not improve, skipping deployment",
+          "skipped": true
+        }
+      }
+    }
   }
 ]

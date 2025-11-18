@@ -2,6 +2,79 @@
 
 A complete MLOps pipeline for aircraft audio detection, including annotation, processing, training, and remote deployment to Raspberry Pi.
 
+## Quick Start
+
+The easiest way to run the pipeline is using the provided workflow scripts. Each script automatically activates the appropriate virtual environment and runs the service.
+
+### Download New Samples (Run frequently - hourly/2-hourly)
+```bash
+# Windows (PowerShell or Command Prompt)
+.\run_download.bat
+
+# Linux/Mac
+./run_download.sh
+```
+Downloads finished audio sessions from Raspberry Pi to `data/raw/`.
+
+### Annotate Samples (Run periodically)
+```bash
+# Windows (PowerShell or Command Prompt)
+.\run_annotator.bat
+
+# Linux/Mac
+./run_annotator.sh
+```
+Launches the Streamlit annotation UI to label downloaded audio samples.
+
+### Train & Deploy (Run when enough samples are ready)
+```bash
+# Windows (PowerShell or Command Prompt)
+.\run_train_deploy.bat
+
+# Linux/Mac
+./run_train_deploy.sh
+```
+Runs the complete MLOps workflow:
+1. Process annotated files (trim, organize)
+2. Upload to Edge Impulse
+3. Train model
+4. Evaluate model performance
+5. Build & download model (if improved)
+6. Deploy to Raspberry Pi (if improved)
+
+**Note**: 
+- On Windows PowerShell, use `.\` prefix (e.g., `.\run_download.bat`) - PowerShell requires explicit path for security
+- On Linux/Mac, you may need to make scripts executable first: `chmod +x run_*.sh`
+
+## Setup
+
+Before running the scripts, ensure each service has its virtual environment set up:
+
+```bash
+# Setup Annotator
+cd services/annotator
+python -m venv venv
+venv\Scripts\activate  # Windows
+# or: source venv/bin/activate  # Linux/Mac
+pip install -r requirements.txt
+
+# Setup Remote
+cd services/remote
+python -m venv venv
+venv\Scripts\activate  # Windows
+# or: source venv/bin/activate  # Linux/Mac
+pip install -r requirements.txt
+
+# Setup MLOps
+cd services/mlops
+python -m venv venv
+venv\Scripts\activate  # Windows
+# or: source venv/bin/activate  # Linux/Mac
+pip install -r requirements.txt
+```
+
+Also create a `.env` file in the repository root with your configuration (see [Remote Integration Setup](#2-remote-integration-servicesremote) below).
+
 ## Components
 
 ### 1. Annotator (`services/annotator/`)
@@ -9,9 +82,8 @@ A complete MLOps pipeline for aircraft audio detection, including annotation, pr
 - Displays filename, waveform, and an audio player; supports range selection and flags.
 
 **Quick Start**
-- Requirements: Python 3.9+, `pip`.
-- Install: `pip install -r services/annotator/requirements.txt`
-- Run: `streamlit run services/annotator/app.py`
+- **Recommended**: Use `run_annotator.bat` or `run_annotator.sh` (see Quick Start section above)
+- **Manual**: `streamlit run services/annotator/app.py` (after activating venv)
 
 **Data Layout**
 - Place audio under `data/raw/<batch_name>/*.wav`.
@@ -50,14 +122,12 @@ Required variables:
 Optional: You can also use `config/remote_config.json` (see `config/remote_config.json.example`), but `.env` is recommended for all configuration.
 
 **Download Sessions**
-```bash
-python services/remote/download_sessions.py
-```
+- **Recommended**: Use `run_download.bat` or `run_download.sh` (see Quick Start section above)
+- **Manual**: `python services/remote/download_sessions.py` (after activating venv)
 
 **Deploy Model**
-```bash
-python services/remote/deploy_model.py
-```
+- **Manual**: `python services/remote/deploy_model.py` (after activating venv)
+- **Note**: Model deployment is typically handled automatically by the Train & Deploy workflow
 
 ### 3. MLOps Pipeline (`services/mlops/`)
 
@@ -83,48 +153,64 @@ python services/remote/deploy_model.py
 
 **Orchestrator** (`orchestrator.py`)
 - Orchestrates the complete MLOps workflow:
-  1. Download finished sessions from Pi
-  2. Process annotated files (trim, etc.)
-  3. Upload to Edge Impulse
-  4. Train model
-  5. Download and evaluate model
+  1. Process annotated files (trim, etc.)
+  2. Upload to Edge Impulse
+  3. Train model
+  4. Evaluate model performance
+  5. Build & download model (if improved)
   6. Deploy improved models to Pi
 
 **Usage**
-```bash
-# Run complete workflow
-python services/mlops/orchestrator.py
-
-# Run specific steps
-python services/mlops/orchestrator.py --steps download_sessions process_annotations
-
-# Wait for training to complete
-python services/mlops/orchestrator.py --wait-training
-
-# Skip annotation step (if already done)
-python services/mlops/orchestrator.py --skip-annotation
-```
-
-**Installation**
-```bash
-pip install -r services/mlops/requirements.txt
-```
+- **Recommended**: Use `run_train_deploy.bat` or `run_train_deploy.sh` (see Quick Start section above)
+- **Manual**: 
+  ```bash
+  # Run complete train & deploy workflow
+  python services/mlops/orchestrator.py --steps process_annotations upload_to_ei train_model evaluate_model build_and_download deploy_model --wait-training
+  
+  # Run specific steps
+  python services/mlops/orchestrator.py --steps process_annotations upload_to_ei
+  
+  # Wait for training to complete
+  python services/mlops/orchestrator.py --wait-training
+  ```
 
 ## Complete Workflow
 
-1. **Data Collection**: Raspberry Pi continuously collects audio samples in sessions
-2. **Download**: Run `download_sessions.py` to fetch finished sessions to `data/raw/`
-3. **Annotation**: Use the annotator app to label samples
-4. **Processing**: Run `processor.py` to trim and organize samples
-5. **Upload**: Run `ei_uploader.py` to upload to Edge Impulse
-6. **Train**: Run `ei_trainer.py` to start training
-7. **Evaluate**: Run `ei_downloader.py` to download and evaluate model
-8. **Deploy**: If model improved, run `deploy_model.py` to deploy to Pi
+The typical workflow follows three main phases:
 
-Or use the orchestrator to automate steps 2-8:
-```bash
-python services/mlops/orchestrator.py --wait-training
-```
+1. **Data Collection**: Raspberry Pi continuously collects audio samples in sessions
+
+2. **Download** (Run frequently - hourly/2-hourly):
+   ```bash
+   .\run_download.bat  # Windows (PowerShell/CMD)
+   # or
+   ./run_download.sh   # Linux/Mac
+   ```
+   Fetches finished sessions from Pi to `data/raw/`
+
+3. **Annotation** (Run periodically when new batches are available):
+   ```bash
+   .\run_annotator.bat  # Windows (PowerShell/CMD)
+   # or
+   ./run_annotator.sh   # Linux/Mac
+   ```
+   Label downloaded audio samples using the Streamlit UI
+
+4. **Train & Deploy** (Run when enough annotated samples are ready):
+   ```bash
+   .\run_train_deploy.bat  # Windows (PowerShell/CMD)
+   # or
+   ./run_train_deploy.sh   # Linux/Mac
+   ```
+   Automates the complete MLOps pipeline:
+   - Process annotated files (trim, organize)
+   - Upload to Edge Impulse
+   - Train model
+   - Evaluate model performance
+   - Build & download model (if improved)
+   - Deploy to Raspberry Pi (if improved)
+
+**Note**: The Train & Deploy workflow automatically skips build/download and deployment if the model doesn't improve.
 
 ## Session Detection Logic
 

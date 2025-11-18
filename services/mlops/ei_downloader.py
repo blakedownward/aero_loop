@@ -468,6 +468,17 @@ def extract_tflite_from_zip(zip_path: str, output_dir: str, progress_callback=No
                 if os.path.exists(final_path):
                     os.remove(final_path)
                 os.rename(extracted_path, final_path)
+                
+                # Clean up empty subdirectory if it was created
+                subdir_path = os.path.dirname(extracted_path)
+                if subdir_path != output_dir and os.path.exists(subdir_path):
+                    try:
+                        # Only remove if directory is empty
+                        if not os.listdir(subdir_path):
+                            os.rmdir(subdir_path)
+                    except OSError:
+                        # Directory not empty or other error, ignore
+                        pass
             
             if progress_callback:
                 progress_callback(f"Extracted {tflite_filename} from zip")

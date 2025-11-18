@@ -7,6 +7,8 @@ models/*
 
 .idea/
 
+docs/
+
 venv/
 pivenv/
 
@@ -24,3 +26,6 @@ __pycache__/
 .DS_Store
 
 .env
+
+# Generated analysis outputs
+data/inference_stats_by_model.csv

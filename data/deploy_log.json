@@ -25,5 +25,14 @@
     "model_version": "model_20251111_065614.tflite",
     "config_updated": true,
     "config_path": "/home/protopi/ten90audio/ten90audio/config.json"
+  },
+  "model_20251117_212235.tflite": {
+    "deployed_at": "2025-11-17T21:22:42.044985Z",
+    "local_path": "C:\\Users\\Blake\\Repos\\aero_loop\\models\\model_20251117_212235.tflite",
+    "remote_path": "/home/protopi/ten90audio/ten90audio/model_20251117_212235.tflite",
+    "file_size": 33856,
+    "model_version": "model_20251117_212235.tflite",
+    "config_updated": true,
+    "config_path": "/home/protopi/ten90audio/ten90audio/config.json"
   }
 }
