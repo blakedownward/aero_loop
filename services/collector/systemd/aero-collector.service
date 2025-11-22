@@ -1,0 +1,17 @@
+[Unit]
+Description=Aero Loop Collector Service
+After=network.target
+
+[Service]
+Type=simple
+User=protopi
+WorkingDirectory=/home/protopi/aero_loop/services/collector/src
+ExecStart=/home/protopi/aero_loop/services/collector/venv/bin/python3 /home/protopi/aero_loop/services/collector/src/monitor.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+

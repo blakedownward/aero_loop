@@ -1,0 +1,14 @@
+# Python dependencies for Raspberry Pi collector service
+# Note: tflite-runtime must be installed separately for ARM architecture
+# See install.sh for installation instructions
+
+numpy==1.26.2
+scipy<1.15
+sounddevice
+haversine
+python-dotenv
+
+# TensorFlow Lite Runtime (install separately for ARM)
+# For Raspberry Pi: pip install https://github.com/google-coral/pycoral/releases/download/v2.0.0/tflite_runtime-2.15.0-cp39-cp39-linux_aarch64.whl
+# Or use: pip install --extra-index-url https://google-coral.github.io/py-repo/ tflite-runtime
+

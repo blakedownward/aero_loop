@@ -1,0 +1,220 @@
+"""
+Session configuration constants.
+
+Copy this file to session_constants.py and update with your settings.
+
+REQUIRED: Environment variables must be set in a .env file in the collector directory.
+Create a .env file with:
+  PI_USERNAME=your_username
+  DEVICE_LATITUDE=your_latitude
+  DEVICE_LONGITUDE=your_longitude
+  USE_GPS=false
+
+The program will NOT work without these values set.
+"""
+
+import os
+import json
+import datetime as dt
+from pathlib import Path
+
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    # Look for .env file in collector directory (parent of config/)
+    COLLECTOR_DIR = Path(__file__).resolve().parent.parent
+    env_path = COLLECTOR_DIR / '.env'
+    if env_path.exists():
+        load_dotenv(env_path)
+        print(f"Loaded environment variables from {env_path}")
+except ImportError:
+    # python-dotenv not installed, continue without it
+    pass
+except Exception as e:
+    print(f"Warning: Could not load .env file: {e}")
+
+# Add src directory to path for imports
+import sys
+COLLECTOR_DIR = Path(__file__).resolve().parent.parent
+SRC_DIR = COLLECTOR_DIR / "src"
+sys.path.insert(0, str(SRC_DIR))
+
+from areaofinterest import fetch_aoi
+
+# Base directory for the collector service
+BASE_DIR = str(COLLECTOR_DIR)
+
+# REQUIRED: Get Pi username from environment
+# Must be set in .env file: PI_USERNAME=your_username
+PI_USERNAME = os.getenv('PI_USERNAME')
+if not PI_USERNAME:
+    raise ValueError(
+        "PI_USERNAME is required. Please set it in your .env file:\n"
+        "  PI_USERNAME=your_username"
+    )
+
+# GPS Configuration
+# Can be set in .env file: USE_GPS=true or USE_GPS=false
+USE_GPS_STR = os.getenv('USE_GPS', 'false').lower()
+USE_GPS = USE_GPS_STR in ('true', '1', 'yes')
+
+# GPS Log Path (can use ${PI_USERNAME} variable)
+GPS_LOG_PATH_TEMPLATE = os.getenv('GPS_LOG_PATH', f'/home/{PI_USERNAME}/gps_log.json')
+GPS_LOG_PATH = GPS_LOG_PATH_TEMPLATE.replace('${PI_USERNAME}', PI_USERNAME)
+
+# REQUIRED: Hardcoded coordinates (used if USE_GPS is False, or as fallback)
+# Must be set in .env file: DEVICE_LATITUDE and DEVICE_LONGITUDE
+DEVICE_LATITUDE_STR = os.getenv('DEVICE_LATITUDE')
+DEVICE_LONGITUDE_STR = os.getenv('DEVICE_LONGITUDE')
+
+# Only require hardcoded coordinates if GPS is disabled
+if not USE_GPS:
+    if not DEVICE_LATITUDE_STR or not DEVICE_LONGITUDE_STR:
+        raise ValueError(
+            "Device coordinates are required when USE_GPS=false. Please set them in your .env file:\n"
+            "  DEVICE_LATITUDE=your_latitude\n"
+            "  DEVICE_LONGITUDE=your_longitude\n"
+            "Or set USE_GPS=true to use GPS coordinates."
+        )
+    
+    try:
+        DEFAULT_LAT = float(DEVICE_LATITUDE_STR)
+        DEFAULT_LON = float(DEVICE_LONGITUDE_STR)
+    except ValueError as e:
+        raise ValueError(
+            f"Invalid coordinate format. DEVICE_LATITUDE and DEVICE_LONGITUDE must be numbers.\n"
+            f"Error: {e}"
+        )
+else:
+    # GPS is enabled, but we'll still validate hardcoded coords if provided (as fallback)
+    if DEVICE_LATITUDE_STR and DEVICE_LONGITUDE_STR:
+        try:
+            DEFAULT_LAT = float(DEVICE_LATITUDE_STR)
+            DEFAULT_LON = float(DEVICE_LONGITUDE_STR)
+        except ValueError:
+            DEFAULT_LAT = None
+            DEFAULT_LON = None
+    else:
+        DEFAULT_LAT = None
+        DEFAULT_LON = None
+
+# Device coordinates - will be set based on USE_GPS setting
+def try_device_coords():
+    """
+    Try to fetch GPS coordinates from GPS log file.
+    Returns None if GPS is not available or file doesn't exist.
+    """
+    if not USE_GPS:
+        return None
+    
+    if not os.path.exists(GPS_LOG_PATH):
+        return None
+    
+    try:
+        with open(GPS_LOG_PATH, 'r') as f:
+            data = [json.loads(line) for line in f if line.strip()]
+        
+        for meta in data:
+            if meta.get('class') == 'TPV':
+                if meta.get('mode') == 3:  # 3D fix
+                    lat = meta.get('lat')
+                    lon = meta.get('lon')
+                    if lat is not None and lon is not None:
+                        return (lat, lon)
+    except Exception as e:
+        print(f"Error reading GPS coordinates: {e}")
+    
+    return None
+
+# Get device coordinates (GPS or hardcoded)
+DEVICE_COORDS = try_device_coords()
+
+if USE_GPS:
+    # If GPS is enabled, we must have GPS coordinates
+    if DEVICE_COORDS is None:
+        raise ValueError(
+            "GPS is enabled (USE_GPS=true) but GPS coordinates could not be read.\n"
+            f"Check that GPS log file exists: {GPS_LOG_PATH}\n"
+            "Or set USE_GPS=false to use hardcoded coordinates."
+        )
+    print(f"Using GPS coordinates: {DEVICE_COORDS}")
+else:
+    # Use hardcoded coordinates (already validated above when USE_GPS was False)
+    DEVICE_COORDS = (DEFAULT_LAT, DEFAULT_LON)
+    print(f"Using hardcoded coordinates: {DEVICE_COORDS}")
+
+# Validate coordinates are valid
+if DEVICE_COORDS is None or len(DEVICE_COORDS) != 2:
+    raise ValueError("DEVICE_COORDS must be a tuple of (latitude, longitude)")
+
+lat, lon = DEVICE_COORDS
+if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+    raise ValueError(
+        f"Invalid coordinates: {DEVICE_COORDS}\n"
+        f"Latitude must be between -90 and 90, Longitude must be between -180 and 180."
+    )
+
+# Session configuration
+TODAY = str(dt.date.today())
+START_TIME = str(dt.datetime.now())[11:16].replace(':', '-')
+SESSION_ID = TODAY + '_' + START_TIME
+
+# Recording mode
+REC_MODE = "monitor"  # Options: "monitor" or "env"
+
+# Microphone configuration
+MIC_MODE = "nano"  # Options: "standard" or "nano"
+MIC_ID = None  # None = default device, or specify device ID from sounddevice.query_devices()
+LOC_ID = "site1"  # Identifier for this collection site
+
+# Paths
+OUTPUT_PATH = os.path.join(BASE_DIR, "sessions")
+ENV_PATH = os.path.join(BASE_DIR, "env_sessions")
+
+# Model configuration
+MODEL_PATH = os.path.join(BASE_DIR, "models", "model.tflite")
+MODEL_VERSION = "unknown"
+
+# Check for model version file
+version_file = os.path.join(BASE_DIR, "models", "model_version.txt")
+if os.path.exists(version_file):
+    with open(version_file, 'r') as f:
+        MODEL_VERSION = f.read().strip()
+
+# Mel filterbank path
+MEL_FILTERBANK_PATH = os.path.join(BASE_DIR, "config", "mel_16k_512fft_32mel_50to4k.npy")
+
+# Area of Interest (AOI) configuration
+AOI_DISTANCE = 10  # Distance in kilometers from device to AOI boundary
+TRIGGER_DIST = 3.0  # Distance in kilometers to trigger recording
+
+# Calculate AOI from device coordinates
+AOI = fetch_aoi(DEVICE_COORDS, AOI_DISTANCE)
+
+# Socket buffer size for Dump1090 connection
+SOCKET_BUFF_SIZE = 16384
+REFRESH_RATE = 4.0  # Seconds between Dump1090 data fetches
+
+# Audio recording parameters
+SAMPLE_RATE = 16000
+BIT_DEPTH = "int16"
+AC_REC_DURATION = 60  # Aircraft recording duration in seconds
+SILENCE_REC_DURATION = 20  # Silence recording duration in seconds
+
+# Session control parameters
+MAX_SILENCE = 180  # Maximum number of silence recordings before ending session
+SILENCE_BUFFER = 5  # Number of consecutive silent iterations before recording silence
+
+# Environment recording parameters (if REC_MODE == 'env')
+ENV_REC_MINS = 62
+MAX_ENV_DISTANCE = 5
+LOG_ENV_OVER_ALTITUDE = 8000
+
+# Set output path based on recording mode
+if REC_MODE == 'env':
+    OUTPUT_PATH = ENV_PATH
+
+# Create session path
+SESSION_PATH = os.path.join(OUTPUT_PATH, MIC_MODE, SESSION_ID)
+if not os.path.exists(SESSION_PATH):
+    os.makedirs(SESSION_PATH)

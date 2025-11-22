@@ -750,5 +750,445 @@
     "downloaded_at": "2025-11-18T03:53:28.926378+00:00Z",
     "files_downloaded": 24,
     "files_skipped": 0
+  },
+  "2025-11-18_14-10": {
+    "downloaded_at": "2025-11-18T21:40:54.346526+00:00Z",
+    "files_downloaded": 18,
+    "files_skipped": 0
+  },
+  "2025-11-18_15-02": {
+    "downloaded_at": "2025-11-18T21:40:56.942241+00:00Z",
+    "files_downloaded": 19,
+    "files_skipped": 0
+  },
+  "2025-11-18_15-53": {
+    "downloaded_at": "2025-11-18T21:41:00.289188+00:00Z",
+    "files_downloaded": 20,
+    "files_skipped": 0
+  },
+  "2025-11-18_16-43": {
+    "downloaded_at": "2025-11-18T21:41:01.859940+00:00Z",
+    "files_downloaded": 12,
+    "files_skipped": 0
+  },
+  "2025-11-18_17-31": {
+    "downloaded_at": "2025-11-18T21:41:05.533116+00:00Z",
+    "files_downloaded": 21,
+    "files_skipped": 0
+  },
+  "2025-11-18_18-23": {
+    "downloaded_at": "2025-11-18T21:41:10.681381+00:00Z",
+    "files_downloaded": 27,
+    "files_skipped": 0
+  },
+  "2025-11-18_19-16": {
+    "downloaded_at": "2025-11-18T21:41:15.284470+00:00Z",
+    "files_downloaded": 28,
+    "files_skipped": 0
+  },
+  "2025-11-18_20-09": {
+    "downloaded_at": "2025-11-18T21:41:19.710052+00:00Z",
+    "files_downloaded": 28,
+    "files_skipped": 0
+  },
+  "2025-11-18_21-06": {
+    "downloaded_at": "2025-11-18T21:41:21.233232+00:00Z",
+    "files_downloaded": 12,
+    "files_skipped": 0
+  },
+  "2025-11-18_21-57": {
+    "downloaded_at": "2025-11-18T21:41:24.733228+00:00Z",
+    "files_downloaded": 20,
+    "files_skipped": 0
+  },
+  "2025-11-18_22-58": {
+    "downloaded_at": "2025-11-18T21:41:25.525091+00:00Z",
+    "files_downloaded": 6,
+    "files_skipped": 0
+  },
+  "2025-11-19_02-13": {
+    "downloaded_at": "2025-11-18T21:41:26.800521+00:00Z",
+    "files_downloaded": 9,
+    "files_skipped": 0
+  },
+  "2025-11-19_04-58": {
+    "downloaded_at": "2025-11-18T21:41:28.176882+00:00Z",
+    "files_downloaded": 11,
+    "files_skipped": 0
+  },
+  "2025-11-19_06-25": {
+    "downloaded_at": "2025-11-18T21:41:30.163791+00:00Z",
+    "files_downloaded": 14,
+    "files_skipped": 0
+  },
+  "2025-11-19_07-10": {
+    "downloaded_at": "2025-11-18T21:41:31.074059+00:00Z",
+    "files_downloaded": 8,
+    "files_skipped": 0
+  },
+  "2025-11-19_07-59": {
+    "downloaded_at": "2025-11-18T22:49:16.755773+00:00Z",
+    "files_downloaded": 22,
+    "files_skipped": 0
+  },
+  "model_20251118_233615.tflite": {
+    "downloaded_at": "2025-11-18T23:36:19.616078+00:00",
+    "deployment_type": "zip",
+    "model_type": "float32",
+    "engine": "tflite",
+    "model_path": "C:\\Users\\Blake\\Repos\\aero_loop\\models\\model_20251118_233615.tflite",
+    "model_version": null,
+    "model_info": {
+      "success": true,
+      "impulse": {
+        "id": 1,
+        "name": "Impulse #1",
+        "inputBlocks": [
+          {
+            "id": 1,
+            "type": "time-series",
+            "name": "Time series",
+            "title": "Time series data",
+            "padZeros": true,
+            "windowSizeMs": 2000,
+            "windowIncreaseMs": 2000,
+            "frequencyHz": 16000,
+            "labelingMethodMultiLabel": {
+              "type": "end-of-window"
+            },
+            "createdBy": "createImpulse",
+            "createdAt": "2025-11-02T04:03:16.559Z"
+          }
+        ],
+        "dspBlocks": [
+          {
+            "id": 4,
+            "type": "mfe",
+            "name": "MFE_2_SEC",
+            "axes": [
+              "audio"
+            ],
+            "title": "Audio (MFE)",
+            "input": 1,
+            "implementationVersion": 4,
+            "namedAxes": [
+              {
+                "name": "Signal",
+                "description": "The input signal to create an MFE spectrogram from",
+                "required": true,
+                "selectedAxis": "audio"
+              }
+            ],
+            "createdBy": "createImpulse",
+            "createdAt": "2025-11-02T04:24:38.057Z"
+          }
+        ],
+        "learnBlocks": [
+          {
+            "id": 3,
+            "type": "keras",
+            "name": "Classifier",
+            "dsp": [
+              4
+            ],
+            "title": "Classification",
+            "createdBy": "createImpulse",
+            "createdAt": "2025-11-02T04:03:16.559Z"
+          }
+        ],
+        "postProcessingBlocks": [],
+        "type": "default"
+      }
+    },
+    "model_metrics": {
+      "modelType": "float32",
+      "learnBlockType": "keras",
+      "learnBlockId": 3,
+      "confusionMatrix": {
+        "aircraft": {
+          "aircraft": {
+            "raw": 306
+          }
+        },
+        "negative": {
+          "negative": {
+            "raw": 553
+          },
+          "ei_uncertain": {
+            "raw": 3
+          },
+          "aircraft": {
+            "raw": 4
+          }
+        }
+      },
+      "trainingLabels": [
+        "aircraft",
+        "negative"
+      ],
+      "classificationLabels": [
+        "aircraft",
+        "negative",
+        "ei_uncertain"
+      ],
+      "totalWindowCount": 866,
+      "totalCorrectWindowCount": {
+        "raw": 859,
+        "withAnomaly": 0
+      },
+      "accuracy": {
+        "raw": 99.19168591224017
+      }
+    }
+  },
+  "model_20251119_031754.tflite": {
+    "downloaded_at": "2025-11-19T03:17:58.186934+00:00",
+    "deployment_type": "zip",
+    "model_type": "float32",
+    "engine": "tflite",
+    "model_path": "C:\\Users\\Blake\\Repos\\aero_loop\\models\\model_20251119_031754.tflite",
+    "model_version": null,
+    "model_info": {
+      "success": true,
+      "impulse": {
+        "id": 1,
+        "name": "Impulse #1",
+        "inputBlocks": [
+          {
+            "id": 1,
+            "type": "time-series",
+            "name": "Time series",
+            "title": "Time series data",
+            "padZeros": true,
+            "windowSizeMs": 2000,
+            "windowIncreaseMs": 2000,
+            "frequencyHz": 16000,
+            "labelingMethodMultiLabel": {
+              "type": "end-of-window"
+            },
+            "createdBy": "createImpulse",
+            "createdAt": "2025-11-02T04:03:16.559Z"
+          }
+        ],
+        "dspBlocks": [
+          {
+            "id": 4,
+            "type": "mfe",
+            "name": "MFE_2_SEC",
+            "axes": [
+              "audio"
+            ],
+            "title": "Audio (MFE)",
+            "input": 1,
+            "implementationVersion": 4,
+            "namedAxes": [
+              {
+                "name": "Signal",
+                "description": "The input signal to create an MFE spectrogram from",
+                "required": true,
+                "selectedAxis": "audio"
+              }
+            ],
+            "createdBy": "createImpulse",
+            "createdAt": "2025-11-02T04:24:38.057Z"
+          }
+        ],
+        "learnBlocks": [
+          {
+            "id": 3,
+            "type": "keras",
+            "name": "Classifier",
+            "dsp": [
+              4
+            ],
+            "title": "Classification",
+            "createdBy": "createImpulse",
+            "createdAt": "2025-11-02T04:03:16.559Z"
+          }
+        ],
+        "postProcessingBlocks": [],
+        "type": "default"
+      }
+    },
+    "model_metrics": {
+      "modelType": "float32",
+      "learnBlockType": "keras",
+      "learnBlockId": 3,
+      "confusionMatrix": {
+        "aircraft": {
+          "aircraft": {
+            "raw": 305
+          },
+          "negative": {
+            "raw": 1
+          }
+        },
+        "negative": {
+          "negative": {
+            "raw": 553
+          },
+          "aircraft": {
+            "raw": 7
+          }
+        }
+      },
+      "trainingLabels": [
+        "aircraft",
+        "negative"
+      ],
+      "classificationLabels": [
+        "aircraft",
+        "negative",
+        "ei_uncertain"
+      ],
+      "totalWindowCount": 866,
+      "totalCorrectWindowCount": {
+        "raw": 858,
+        "withAnomaly": 0
+      },
+      "accuracy": {
+        "raw": 99.07621247113164
+      }
+    }
+  },
+  "2025-11-19_09-18": {
+    "downloaded_at": "2025-11-19T03:19:40.785246+00:00Z",
+    "files_downloaded": 13,
+    "files_skipped": 0
+  },
+  "2025-11-19_10-01": {
+    "downloaded_at": "2025-11-19T03:19:41.094908+00:00Z",
+    "files_downloaded": 4,
+    "files_skipped": 0
+  },
+  "2025-11-19_10-07": {
+    "downloaded_at": "2025-11-19T03:19:43.946475+00:00Z",
+    "files_downloaded": 25,
+    "files_skipped": 0
+  },
+  "2025-11-19_10-57": {
+    "downloaded_at": "2025-11-19T03:19:47.492012+00:00Z",
+    "files_downloaded": 20,
+    "files_skipped": 0
+  },
+  "2025-11-19_11-46": {
+    "downloaded_at": "2025-11-19T03:19:48.636981+00:00Z",
+    "files_downloaded": 9,
+    "files_skipped": 0
+  },
+  "2025-11-19_12-26": {
+    "downloaded_at": "2025-11-19T03:19:57.015845+00:00Z",
+    "files_downloaded": 20,
+    "files_skipped": 0
+  },
+  "2025-11-19_13-13": {
+    "downloaded_at": "2025-11-19T03:19:57.769212+00:00Z",
+    "files_downloaded": 8,
+    "files_skipped": 0
+  },
+  "2025-11-19_13-49": {
+    "downloaded_at": "2025-11-19T06:04:27.589778+00:00Z",
+    "files_downloaded": 16,
+    "files_skipped": 0
+  },
+  "2025-11-19_14-35": {
+    "downloaded_at": "2025-11-19T06:04:28.547837+00:00Z",
+    "files_downloaded": 7,
+    "files_skipped": 0
+  },
+  "2025-11-19_15-13": {
+    "downloaded_at": "2025-11-19T06:04:30.899707+00:00Z",
+    "files_downloaded": 14,
+    "files_skipped": 0
+  },
+  "2025-11-19_15-56": {
+    "downloaded_at": "2025-11-19T06:04:31.821213+00:00Z",
+    "files_downloaded": 6,
+    "files_skipped": 0
+  },
+  "2025-11-19_16-05": {
+    "downloaded_at": "2025-11-19T06:21:34.938272+00:00Z",
+    "files_downloaded": 15,
+    "files_skipped": 0
+  },
+  "2025-11-19_16-50": {
+    "downloaded_at": "2025-11-19T21:03:35.142662+00:00Z",
+    "files_downloaded": 11,
+    "files_skipped": 0
+  },
+  "2025-11-19_17-29": {
+    "downloaded_at": "2025-11-19T21:03:35.181564+00:00Z",
+    "files_downloaded": 0,
+    "files_skipped": 0
+  },
+  "2025-11-19_17-30": {
+    "downloaded_at": "2025-11-19T21:03:38.173672+00:00Z",
+    "files_downloaded": 19,
+    "files_skipped": 0
+  },
+  "2025-11-19_18-20": {
+    "downloaded_at": "2025-11-19T21:03:41.267906+00:00Z",
+    "files_downloaded": 22,
+    "files_skipped": 0
+  },
+  "2025-11-19_19-07": {
+    "downloaded_at": "2025-11-19T21:03:43.316085+00:00Z",
+    "files_downloaded": 18,
+    "files_skipped": 0
+  },
+  "2025-11-19_19-52": {
+    "downloaded_at": "2025-11-19T21:03:45.416317+00:00Z",
+    "files_downloaded": 17,
+    "files_skipped": 0
+  },
+  "2025-11-19_20-44": {
+    "downloaded_at": "2025-11-19T21:03:47.540048+00:00Z",
+    "files_downloaded": 16,
+    "files_skipped": 0
+  },
+  "2025-11-19_21-33": {
+    "downloaded_at": "2025-11-19T21:03:51.636879+00:00Z",
+    "files_downloaded": 30,
+    "files_skipped": 0
+  },
+  "2025-11-19_22-28": {
+    "downloaded_at": "2025-11-19T21:03:53.332896+00:00Z",
+    "files_downloaded": 15,
+    "files_skipped": 0
+  },
+  "2025-11-19_23-29": {
+    "downloaded_at": "2025-11-19T21:03:54.086045+00:00Z",
+    "files_downloaded": 8,
+    "files_skipped": 0
+  },
+  "2025-11-20_00-46": {
+    "downloaded_at": "2025-11-19T21:03:54.836656+00:00Z",
+    "files_downloaded": 8,
+    "files_skipped": 0
+  },
+  "2025-11-20_04-06": {
+    "downloaded_at": "2025-11-19T21:03:55.076065+00:00Z",
+    "files_downloaded": 4,
+    "files_skipped": 0
+  },
+  "2025-11-20_05-06": {
+    "downloaded_at": "2025-11-19T21:03:55.271374+00:00Z",
+    "files_downloaded": 4,
+    "files_skipped": 0
+  },
+  "2025-11-20_06-11": {
+    "downloaded_at": "2025-11-19T21:03:56.915999+00:00Z",
+    "files_downloaded": 14,
+    "files_skipped": 0
+  },
+  "2025-11-20_07-07": {
+    "downloaded_at": "2025-11-19T22:07:15.121516+00:00Z",
+    "files_downloaded": 7,
+    "files_skipped": 0
+  },
+  "2025-11-20_07-48": {
+    "downloaded_at": "2025-11-19T22:07:20.167558+00:00Z",
+    "files_downloaded": 26,
+    "files_skipped": 0
   }
 }

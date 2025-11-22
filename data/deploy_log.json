@@ -34,5 +34,23 @@
     "model_version": "model_20251117_212235.tflite",
     "config_updated": true,
     "config_path": "/home/protopi/ten90audio/ten90audio/config.json"
+  },
+  "model_20251118_233615.tflite": {
+    "deployed_at": "2025-11-18T23:36:20.842511Z",
+    "local_path": "C:\\Users\\Blake\\Repos\\aero_loop\\models\\model_20251118_233615.tflite",
+    "remote_path": "/home/protopi/ten90audio/ten90audio/model_20251118_233615.tflite",
+    "file_size": 33856,
+    "model_version": "model_20251118_233615.tflite",
+    "config_updated": true,
+    "config_path": "/home/protopi/ten90audio/ten90audio/config.json"
+  },
+  "model_20251119_031754.tflite": {
+    "deployed_at": "2025-11-19T03:17:59.419058Z",
+    "local_path": "C:\\Users\\Blake\\Repos\\aero_loop\\models\\model_20251119_031754.tflite",
+    "remote_path": "/home/protopi/ten90audio/ten90audio/model_20251119_031754.tflite",
+    "file_size": 33856,
+    "model_version": "model_20251119_031754.tflite",
+    "config_updated": true,
+    "config_path": "/home/protopi/ten90audio/ten90audio/config.json"
   }
 }

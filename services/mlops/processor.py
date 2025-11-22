@@ -153,6 +153,8 @@ def trim_wav(src: str, dst: str, start_s: float, end_s: float) -> Tuple[bool, fl
 
     Returns (ok, duration_s_written)
     """
+    import numpy as np
+    
     duration = max(0.0, float(end_s) - float(start_s))
     if duration <= 0.0:
         return False, 0.0
@@ -160,8 +162,27 @@ def trim_wav(src: str, dst: str, start_s: float, end_s: float) -> Tuple[bool, fl
     y, sr = librosa.load(src, sr=SAMPLE_RATE, offset=float(start_s), duration=float(duration), mono=True)
     if y.size == 0:
         return False, 0.0
-    # Write as PCM_16
-    sf.write(dst, y, SAMPLE_RATE, subtype='PCM_16')
+    
+    # Ensure data is in valid range [-1, 1] for PCM_16 conversion
+    # Clip to prevent overflow during int16 conversion
+    y = np.clip(y, -1.0, 1.0)
+    
+    # Write as PCM_16 using context manager to ensure proper file flushing
+    # This is critical on Windows, especially when running through batch files
+    # The context manager ensures the file is fully written and closed before returning
+    with sf.SoundFile(dst, mode='w', samplerate=SAMPLE_RATE, channels=1, 
+                      subtype='PCM_16', format='WAV') as f:
+        f.write(y)
+    
+    # Verify file was written completely
+    # Expected size: WAV header (44 bytes) + audio data (samples * 2 bytes for int16)
+    expected_min_size = 44 + (len(y) * 2)
+    actual_size = os.path.getsize(dst)
+    if actual_size < expected_min_size * 0.9:  # Allow 10% variance for header variations
+        print(f"Warning: File {os.path.basename(dst)} may be incomplete "
+              f"(expected at least {expected_min_size}, got {actual_size})")
+        return False, 0.0
+    
     return True, float(y.shape[-1]) / float(SAMPLE_RATE)
 
 

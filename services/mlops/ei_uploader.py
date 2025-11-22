@@ -17,6 +17,7 @@ import json
 import requests
 from typing import List, Dict, Optional
 from pathlib import Path
+from io import BytesIO
 
 
 def _repo_root() -> str:
@@ -167,21 +168,54 @@ def upload_sample(filepath: str, label: str, category: str = 'training',
         }
         
         # Prepare multipart form data
-        with open(filepath, 'rb') as f:
-            files = {
-                'data': (os.path.basename(filepath), f, 'audio/wav')
-            }
-            
-            response = requests.post(url, headers=headers, files=files)
-            response.raise_for_status()
-            
-            result = response.json()
-            
+        # IMPORTANT: Read file completely into bytes to avoid any interference
+        # from librosa/soundfile that may be loaded in the same process.
+        # These libraries can affect file I/O state, so we read raw bytes
+        # and create a fresh BytesIO object isolated from any library state.
+        file_size = os.path.getsize(filepath)
+        if file_size == 0:
             if progress_callback:
-                sample_id = result.get('id') or result.get('sampleId') or result.get('sample_id', 'unknown')
-                progress_callback(f"Uploaded {os.path.basename(filepath)} (ID: {sample_id})")
-            
-            return result
+                progress_callback(f"Error: File {os.path.basename(filepath)} is empty")
+            return None
+        
+        # Read file as raw binary bytes - this bypasses any library-level
+        # file handling that librosa/soundfile might have set up
+        # Use standard binary read to ensure compatibility
+        file_data = None
+        with open(filepath, 'rb') as f:
+            file_data = f.read()
+        
+        # Verify WAV header (RIFF...WAVE) to ensure file integrity
+        if len(file_data) < 12 or file_data[:4] != b'RIFF' or file_data[8:12] != b'WAVE':
+            if progress_callback:
+                progress_callback(f"Warning: File {os.path.basename(filepath)} may not be a valid WAV file")
+            # Continue anyway, as Edge Impulse might handle it
+        
+        # Verify we read the complete file
+        if len(file_data) != file_size:
+            if progress_callback:
+                progress_callback(f"Error: File {os.path.basename(filepath)} read incomplete ({len(file_data)}/{file_size} bytes)")
+            return None
+        
+        # Create a fresh BytesIO object from the raw bytes
+        # This ensures no interference from librosa/soundfile state
+        file_obj = BytesIO(file_data)
+        file_obj.seek(0)
+        
+        files = {
+            'data': (os.path.basename(filepath), file_obj, 'audio/wav')
+        }
+        
+        response = requests.post(url, headers=headers, files=files)
+        response.raise_for_status()
+        
+        result = response.json()
+        
+        if progress_callback:
+            sample_id = result.get('id') or result.get('sampleId') or result.get('sample_id', 'unknown')
+            progress_callback(f"Uploaded {os.path.basename(filepath)} (ID: {sample_id})")
+        
+        return result
     except requests.exceptions.RequestException as e:
         if progress_callback:
             error_msg = str(e)

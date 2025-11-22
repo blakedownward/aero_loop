@@ -7,6 +7,9 @@ models/*
 
 .idea/
 
+services/collector/ten90audio_backup_2025-11-20/
+services/collector/new_collector
+
 docs/
 
 venv/
