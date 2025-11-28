@@ -5,15 +5,7 @@ models/*
 
 .idea/
 
-services/collector/ten90audio_backup_2025-11-20/
-services/collector/new_collector
-
-services/dsp/
-
-docs/
-
 venv/
-pivenv/
 
 # Python bytecode/cache
 __pycache__/
@@ -29,5 +21,3 @@ __pycache__/
 .DS_Store
 
 .env
-
-DEL_*
