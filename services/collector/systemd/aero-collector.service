@@ -1,6 +1,7 @@
 [Unit]
 Description=Aero Loop Collector Service
-After=network.target
+After=network.target rundump.service
+Requires=rundump.service
 
 [Service]
 Type=simple

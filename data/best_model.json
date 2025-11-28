@@ -1,11 +1,11 @@
 {
   "model_filename": null,
   "metrics": {
-    "accuracy": 99.19168591224017,
+    "accuracy": 96.85693641618498,
     "loss": Infinity,
     "f1_score": 0.0,
     "precision": 0.0,
     "recall": 0.0
   },
-  "evaluated_at": "2025-11-18T23:35:25.613020Z"
+  "evaluated_at": "2025-11-26T01:22:05.342976Z"
 }

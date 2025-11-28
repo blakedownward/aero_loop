@@ -1,0 +1,19 @@
+[Unit]
+Description=Get GPS coordinates service
+After=network.target
+Before=rundump.service
+
+[Install]
+WantedBy=multi-user.target
+RequiredBy=rundump.service
+
+[Service]
+Type=simple
+User=protopi
+WorkingDirectory=/home/protopi/aero_loop/services/collector/scripts
+ExecStart=/bin/bash /home/protopi/aero_loop/services/collector/scripts/get_coords.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+

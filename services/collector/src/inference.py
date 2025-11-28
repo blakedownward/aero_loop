@@ -3,7 +3,7 @@
 Edge Impulse parity feature pipeline + TFLite inference wrapper.
 
 This script mirrors the feature generation used in Edge Impulse
-so you can run inference on-device (e.g. Raspberry Pi) with identical preprocessing.
+so you can run inference on-device (e.g. Raspberry Pi) with identical-ish preprocessing.
 """
 
 import os
@@ -17,10 +17,8 @@ from tflite_runtime.interpreter import Interpreter
 
 # Add config directory to path for imports
 COLLECTOR_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CONFIG_DIR = os.path.join(COLLECTOR_DIR, 'config')
+CONFIG_DIR = os.path.join(COLLECTOR_DIR, "config")
 sys.path.insert(0, CONFIG_DIR)
-
-import session_constants as c
 
 # ---------------------------------------------------------------------------
 # Constants (must match Edge Impulse MFE settings)
@@ -29,11 +27,15 @@ SR = 16000
 NFFT = 512
 HOP = 512
 N_MELS = 32
-FRAMES = 62          # 32 mel bins * 62 frames -> 1984 features
+FRAMES = 62  # 32 mel bins * 62 frames -> 1984 features
 NOISE_FLOOR_DB = -52.0
 
-# Load mel filterbank from config path
-MEL_PATH = Path(c.MEL_FILTERBANK_PATH)
+# Tunables so you can A/B quickly
+USE_12BIT_QUANT = True  # <<< try False to see impact
+USE_HANN_WINDOW = True  # <<< EI typically uses Hann; set False to go back to Hamming
+
+# Load mel filterbank from config path (filterbank must be manually created if DSP parameters change)
+MEL_PATH = Path(CONFIG_DIR) / "mel_16k_512fft_32mel_50to4k.npy"
 if not MEL_PATH.exists():
     raise FileNotFoundError(f"Mel filterbank not found at {MEL_PATH}")
 MEL_BANDS = np.load(MEL_PATH).astype(np.float32)
@@ -41,16 +43,17 @@ MEL_BANDS = np.load(MEL_PATH).astype(np.float32)
 INFERENCING_CATEGORIES = ("aircraft", "negative")
 POSITIVE_LABEL = "aircraft"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
 def quantize_to_12bit_ei_format(signal: np.ndarray) -> np.ndarray:
     """
-    Quantize int16 signal to 12-bit format matching Edge Impulse's conversion.
-    
-    Edge Impulse converts 16-bit WAV files to 12-bit internally during ingestion.
-    This function replicates that conversion so Pi inference matches training data.
+    Quantize int16 signal to 12-bit format similar to Edge Impulse's conversion.
+
+    EI converts 16-bit WAV files to 12-bit internally during ingestion.
+    This function approximates that conversion so Pi inference matches training data.
     """
     # Normalize to float [-1, 1]
     signal_float = signal.astype(np.float32) / 32768.0
@@ -95,41 +98,65 @@ def pre_emphasis(x: np.ndarray, cof: float = 0.98) -> np.ndarray:
 
 def mfe_ei_compatible(signal_f32_mono_16k: np.ndarray) -> np.ndarray:
     """
-    Reproduce EI's mel feature extraction pipeline.
-    Returns mel features in [0,1] after EI's quantize/dequant.
+    Approximate EI's mel feature extraction pipeline.
+    Returns mel features in [0,1] after EI-style quantize/dequant.
     Output shape: (32, T)
     """
     x = signal_f32_mono_16k.astype(np.float32, copy=False)
-    x = pre_emphasis(x, 0.98)
-    window = np.hamming(NFFT).astype(np.float32)
 
+    # Pre-emphasis
+    x = pre_emphasis(x, 0.98)
+
+    # Window function: Hann is usually closer to EI's DSP than Hamming
+    if USE_HANN_WINDOW:
+        window = np.hanning(NFFT).astype(np.float32)  # <<<
+    else:
+        window = np.hamming(NFFT).astype(np.float32)
+
+    # Framing
     n_frames = 1 + max(0, (x.shape[0] - NFFT) // HOP)
     if n_frames <= 0:
         raise RuntimeError(f"Signal too short for NFFT={NFFT}, hop={HOP}")
 
+    # Power spectrogram
     S_pow = np.empty((NFFT // 2 + 1, n_frames), dtype=np.float32)
     for i in range(n_frames):
         start = i * HOP
         frame = x[start : start + NFFT]
         frame = frame * window
-        spec = np.fft.rfft(frame, n=NFFT, norm=None)
+        spec = np.fft.rfft(frame, n=NFFT)
+        # power spectrum; scale doesn't matter much after log, but keep consistent
         S_pow[:, i] = (np.abs(spec) ** 2 / NFFT).astype(np.float32)
 
+    # Mel filterbank
     M_pow = MEL_BANDS @ S_pow
+    # Avoid log of zero
     np.clip(M_pow, 1e-30, None, out=M_pow)
+
+    # dB conversion
     M_db = 10.0 * np.log10(M_pow, dtype=np.float32)
 
-    rng = (-NOISE_FLOOR_DB) + 12.0
+    # Normalize using noise floor + 12 dB dynamic range (EI style)
+    rng = (-NOISE_FLOOR_DB) + 12.0  # from EI config
     M_n = (M_db - NOISE_FLOOR_DB) / rng
     np.clip(M_n, 0.0, 1.0, out=M_n)
 
+    # Quantize to [0,255] then back to [0,1] to approximate EI's int pipeline
     M_q = np.rint(M_n * 256.0).astype(np.uint16)
     np.clip(M_q, 0, 255, out=M_q)
     return M_q.astype(np.float32) / 256.0
 
 
-def run_interpreter(interpreter: Interpreter, feature_block: np.ndarray) -> float:
-    """feature_block: (32, 62) array in [0,1]."""
+def run_interpreter(interpreter: Interpreter, feature_block: np.ndarray) -> np.ndarray:
+    """
+    Run TFLite interpreter on a (32, 62) feature block and return a
+    1D array of class probabilities aligned with INFERENCING_CATEGORIES.
+
+    Handles several cases:
+    - Single scalar output: treated as sigmoid/logit for class 0 → [p0, 1-p0]
+    - Multi-element vector already in [0,1] and summing ≈1: treated as probs
+    - Multi-element vector otherwise: treated as logits → softmax
+    """
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
 
@@ -145,22 +172,49 @@ def run_interpreter(interpreter: Interpreter, feature_block: np.ndarray) -> floa
 
     interpreter.set_tensor(idx, x)
     interpreter.invoke()
-    pred = interpreter.get_tensor(output_details[0]["index"])
-    return float(pred.ravel()[0])
+    raw = interpreter.get_tensor(output_details[0]["index"]).astype(np.float32).ravel()
+
+    if raw.size == 0:
+        raise RuntimeError("Model returned empty output tensor")
+
+    # Case 1: single scalar output (sigmoid or logit for class 0)
+    if raw.size == 1:
+        v = float(raw[0])
+        # If outside [0,1], assume it's a logit and apply sigmoid
+        if v < 0.0 or v > 1.0:
+            p0 = 1.0 / (1.0 + np.exp(-v))
+        else:
+            p0 = max(0.0, min(1.0, v))
+        return np.array([p0, 1.0 - p0], dtype=np.float32)
+
+    # Case 2: vector that already looks like probabilities
+    if np.all(raw >= 0.0) and np.all(raw <= 1.0):
+        s = float(raw.sum())
+        if 0.99 <= s <= 1.01:
+            # Normalise just in case of small numeric drift
+            return raw / max(s, 1e-8)
+
+    # Case 3: treat as logits → softmax
+    raw_shifted = raw - float(raw.max())
+    exp = np.exp(raw_shifted)
+    probs = exp / float(exp.sum())
+    return probs.astype(np.float32)
 
 
-def aircraft_probability(raw_pred: float, target_label: str = POSITIVE_LABEL) -> float:
-    """Map raw sigmoid output to aircraft probability based on label ordering."""
-    if len(INFERENCING_CATEGORIES) != 2:
-        return float(raw_pred)
+def class_probability(preds: np.ndarray, target_label: str = POSITIVE_LABEL) -> float:
+    """
+    Map a vector of class probabilities to the probability of `target_label`,
+    using INFERENCING_CATEGORIES for indexing.
+    """
+    preds = np.asarray(preds, dtype=np.float32).ravel()
     if target_label not in INFERENCING_CATEGORIES:
         raise ValueError(f"Label '{target_label}' not in {INFERENCING_CATEGORIES}")
     idx = INFERENCING_CATEGORIES.index(target_label)
-    if idx == 0:
-        return float(raw_pred)
-    if idx == 1:
-        return 1.0 - float(raw_pred)
-    return float(raw_pred)
+    if idx >= preds.size:
+        raise ValueError(
+            f"Preds has shape {preds.shape}, but label index {idx} is out of range"
+        )
+    return float(preds[idx])
 
 
 def load_wav(path: Path) -> np.ndarray:
@@ -177,23 +231,34 @@ def predict_file(
     debug: bool = False,
 ) -> np.ndarray:
     """
-    Predict aircraft probability for a WAV file.
-    
+    Predict aircraft probability for each ~2s window in a WAV file.
+
     Args:
         wav_path: Path to WAV file (16 kHz mono)
         model_path: Path to TFLite model file
-        debug: Print debug information
-    
+        debug: Print debug information for first and tail segments
+
     Returns:
-        Array of predictions (one per segment)
+        Array of predictions (one per segment, in time order)
     """
     signal = load_wav(Path(wav_path))
-    # Quantize to 12-bit to match Edge Impulse's internal conversion
-    signal = quantize_to_12bit_ei_format(signal)
-    feats = mfe_ei_compatible(decode_ei_raw(signal))
-    
+
+    # Quantize to 12-bit to approximate EI's internal conversion
+    if USE_12BIT_QUANT:  # <<<
+        signal_12bit = quantize_to_12bit_ei_format(signal)
+        signal_float = signal_12bit.astype(np.float32) / 2048.0
+    else:
+        # Direct int16 → float path
+        signal_float = signal.astype(np.float32) / 32768.0
+
+    signal_float = np.clip(signal_float, -1.0, 1.0)
+
+    feats = mfe_ei_compatible(signal_float)
+
     if debug:
-        print(f"Features shape: {feats.shape}, mean={feats.mean():.4f}, std={feats.std():.4f}")
+        print(
+            f"Features shape: {feats.shape}, mean={feats.mean():.4f}, std={feats.std():.4f}"
+        )
 
     interpreter = Interpreter(model_path=str(model_path))
     interpreter.allocate_tensors()
@@ -206,23 +271,34 @@ def predict_file(
     if total_frames < FRAMES:
         raise ValueError(f"Not enough frames ({total_frames}) for a single prediction.")
 
+    # Non-overlapping ~2s windows across the full file
     starts = list(range(0, total_frames - FRAMES + 1, FRAMES))
     preds = []
-    for s in starts:
+    for i, s in enumerate(starts):
         block = feats[:, s : s + FRAMES]
-        raw = run_interpreter(interpreter, block)
-        preds.append(aircraft_probability(raw))
+        probs_vec = run_interpreter(interpreter, block)
+        if debug and i == 0:
+            print(
+                f"First segment raw output probs: {probs_vec}, sum={probs_vec.sum():.4f}"
+            )
+        p_aircraft = class_probability(probs_vec, POSITIVE_LABEL)
+        preds.append(p_aircraft)
 
+    # Optional tail if the last window is partial in frame count
     if total_frames >= FRAMES and (total_frames % FRAMES) != 0:
         tail = feats[:, -FRAMES:]
-        raw = run_interpreter(interpreter, tail)
-        preds.append(aircraft_probability(raw))
+        probs_vec = run_interpreter(interpreter, tail)
+        if debug:
+            print(
+                f"Tail segment raw output probs: {probs_vec}, sum={probs_vec.sum():.4f}"
+            )
+        p_aircraft = class_probability(probs_vec, POSITIVE_LABEL)
+        preds.append(p_aircraft)
 
     return np.array(preds, dtype=np.float32)
 
 
 def max_pred(wav_path: str, model_path: str) -> float:
-    """Get maximum prediction for a WAV file."""
+    """Get maximum prediction over all windows in a WAV file."""
     preds = predict_file(wav_path=wav_path, model_path=model_path)
     return np.max(preds)
-

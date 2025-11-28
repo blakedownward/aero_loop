@@ -11,7 +11,6 @@ Remote connection tools for downloading session data from Raspberry Pi and deplo
 
 2. **Configure connection:**
    - Create `.env` file in repo root (see `.env.example`)
-   - Or use `config/remote_config.json` (see `config/remote_config.json.example`)
 
 ## Testing the Downloader
 
@@ -71,9 +70,7 @@ python services/remote/deploy_model.py
 
 ## Configuration
 
-The scripts will look for configuration in this order:
-1. Environment variables (from `.env` file or system)
-2. `config/remote_config.json` file
+Configuration is loaded from environment variables (from `.env` file or system environment).
 
 Required settings:
 - `PI_HOST` - Raspberry Pi hostname or IP

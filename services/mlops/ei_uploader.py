@@ -233,12 +233,11 @@ def upload_sample(filepath: str, label: str, category: str = 'training',
         return None
 
 
-def upload_processed_samples(progress_callback=None) -> Dict[str, any]:
+def upload_processed_samples(category: str = 'training', progress_callback=None) -> Dict[str, any]:
     """Upload processed samples from data/processed to Edge Impulse.
     
-    All samples are uploaded to the TRAINING set. The TEST set remains fixed.
-    
     Args:
+        category: 'training' or 'testing' - category to upload samples to
         progress_callback: Optional callback for progress updates
     
     Returns: Dictionary with upload statistics
@@ -305,7 +304,7 @@ def upload_processed_samples(progress_callback=None) -> Dict[str, any]:
             if manifest_entry.get('id'):
                 log_entry['sample_id'] = manifest_entry['id']
                 log_entry['label'] = class_name
-                log_entry['category'] = 'training'
+                log_entry['category'] = manifest_entry.get('category', category)
                 log_entry['filepath'] = dst_path
                 upload_log[filename] = log_entry
                 save_upload_log(upload_log)
@@ -323,8 +322,9 @@ def upload_processed_samples(progress_callback=None) -> Dict[str, any]:
             failed += 1
             continue
         
-        # All samples uploaded to training set (test set remains fixed)
-        category = 'training'
+        # Validate category
+        if category not in ('training', 'testing'):
+            category = 'training'  # Default to training if invalid
         
         # Upload
         response = upload_sample(filepath, class_name, category, progress_callback)
@@ -358,10 +358,18 @@ def upload_processed_samples(progress_callback=None) -> Dict[str, any]:
 
 
 if __name__ == '__main__':
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Upload processed samples to Edge Impulse')
+    parser.add_argument('--category', choices=['training', 'testing'], default='training',
+                       help='Category to upload samples to (default: training)')
+    args = parser.parse_args()
+    
     def print_progress(msg):
         print(msg)
     
-    result = upload_processed_samples(progress_callback=print_progress)
+    print(f"Uploading samples to '{args.category}' category...")
+    result = upload_processed_samples(category=args.category, progress_callback=print_progress)
     
     if result['success']:
         print(f"\nUpload complete:")

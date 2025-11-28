@@ -1,0 +1,16 @@
+[Unit]
+Description=Service to port dump1090 quietly to stdout.
+StartLimitBurst=3
+StartLimitInterval=10
+After=network.target
+Before=aero-collector.service
+[Install]
+WantedBy=multi-user.target
+RequiredBy=aero-collector.service
+[Service]
+Type=simple
+User=protopi
+WorkingDirectory=/home/protopi
+ExecStart=/home/protopi/dump1090/dump1090 --net --quiet
+Restart=on-failure
+RestartSec=3

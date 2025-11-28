@@ -1,7 +1,5 @@
-data/processed/*
-data/raw/*
-data/zenodo/
-data/edge-impulse/
+# Data directory (all contents)
+data/
 
 models/*
 
@@ -9,6 +7,8 @@ models/*
 
 services/collector/ten90audio_backup_2025-11-20/
 services/collector/new_collector
+
+services/dsp/
 
 docs/
 
@@ -29,6 +29,8 @@ __pycache__/
 .DS_Store
 
 .env
+
+DEL_*
 
 # Generated analysis outputs
 data/inference_stats_by_model.csv

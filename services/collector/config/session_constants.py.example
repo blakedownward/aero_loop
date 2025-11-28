@@ -159,34 +159,56 @@ TODAY = str(dt.date.today())
 START_TIME = str(dt.datetime.now())[11:16].replace(':', '-')
 SESSION_ID = TODAY + '_' + START_TIME
 
-# Recording mode
-REC_MODE = "monitor"  # Options: "monitor" or "env"
 
 # Microphone configuration
-MIC_MODE = "nano"  # Options: "standard" or "nano"
-MIC_ID = None  # None = default device, or specify device ID from sounddevice.query_devices()
-LOC_ID = "site1"  # Identifier for this collection site
+MIC_MODE = "nano"  # Change if not using nano mic: "standard" or "nano"
+
 
 # Paths
 OUTPUT_PATH = os.path.join(BASE_DIR, "sessions")
-ENV_PATH = os.path.join(BASE_DIR, "env_sessions")
+
 
 # Model configuration
-MODEL_PATH = os.path.join(BASE_DIR, "models", "model.tflite")
 MODEL_VERSION = "unknown"
+MODEL_PATH = None
 
-# Check for model version file
+# Check for model version file and determine model path
 version_file = os.path.join(BASE_DIR, "models", "model_version.txt")
 if os.path.exists(version_file):
     with open(version_file, 'r') as f:
-        MODEL_VERSION = f.read().strip()
+        model_version_content = f.read().strip()
+        MODEL_VERSION = model_version_content
+    
+    # If model_version.txt contains a filename (ends with .tflite), use it
+    if model_version_content.endswith('.tflite'):
+        MODEL_PATH = os.path.join(BASE_DIR, "models", model_version_content)
+    else:
+        # If it's just a version string, try to find matching model file
+        # Search for .tflite files in models directory
+        models_dir = os.path.join(BASE_DIR, "models")
+        if os.path.exists(models_dir):
+            tflite_files = [f for f in os.listdir(models_dir) if f.endswith('.tflite')]
+            if tflite_files:
+                # Use the first .tflite file found (or you could use most recent)
+                MODEL_PATH = os.path.join(models_dir, tflite_files[0])
+            else:
+                # Fallback to default
+                MODEL_PATH = os.path.join(BASE_DIR, "models", "model.tflite")
+        else:
+            MODEL_PATH = os.path.join(BASE_DIR, "models", "model.tflite")
+else:
+    # Fallback to default if model_version.txt doesn't exist
+    MODEL_PATH = os.path.join(BASE_DIR, "models", "model.tflite")
 
-# Mel filterbank path
-MEL_FILTERBANK_PATH = os.path.join(BASE_DIR, "config", "mel_16k_512fft_32mel_50to4k.npy")
+# Ensure MODEL_PATH is set (safety check)
+if MODEL_PATH is None:
+    MODEL_PATH = os.path.join(BASE_DIR, "models", "model.tflite")
+
+
 
 # Area of Interest (AOI) configuration
 AOI_DISTANCE = 10  # Distance in kilometers from device to AOI boundary
-TRIGGER_DIST = 3.0  # Distance in kilometers to trigger recording
+TRIGGER_DIST = 3.0  # Distance in kilometers to trigger an aircraft recording
 
 # Calculate AOI from device coordinates
 AOI = fetch_aoi(DEVICE_COORDS, AOI_DISTANCE)
@@ -197,7 +219,6 @@ REFRESH_RATE = 4.0  # Seconds between Dump1090 data fetches
 
 # Audio recording parameters
 SAMPLE_RATE = 16000
-BIT_DEPTH = "int16"
 AC_REC_DURATION = 60  # Aircraft recording duration in seconds
 SILENCE_REC_DURATION = 20  # Silence recording duration in seconds
 
@@ -205,14 +226,6 @@ SILENCE_REC_DURATION = 20  # Silence recording duration in seconds
 MAX_SILENCE = 180  # Maximum number of silence recordings before ending session
 SILENCE_BUFFER = 5  # Number of consecutive silent iterations before recording silence
 
-# Environment recording parameters (if REC_MODE == 'env')
-ENV_REC_MINS = 62
-MAX_ENV_DISTANCE = 5
-LOG_ENV_OVER_ALTITUDE = 8000
-
-# Set output path based on recording mode
-if REC_MODE == 'env':
-    OUTPUT_PATH = ENV_PATH
 
 # Create session path
 SESSION_PATH = os.path.join(OUTPUT_PATH, MIC_MODE, SESSION_ID)

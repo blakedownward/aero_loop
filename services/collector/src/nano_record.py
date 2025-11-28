@@ -24,7 +24,7 @@ SAMPLE_RATE = c.SAMPLE_RATE
 CHANNELS = 1  # mono
 
 # Serial port configuration
-SERIAL_PORT = '/dev/ttyACM0'  # Common Arduino port on Linux
+SERIAL_PORT = '/dev/ArduinoNanoMic'  # Symlink for Arduino nano usb mic
 BAUD_RATE = 115200
 
 
@@ -40,44 +40,30 @@ def _read_nano_audio(duration, sample_rate):
         numpy array of audio samples (int16)
     """
     try:
-        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=None)
         time.sleep(0.5)  # Wait for serial connection to stabilize
         
         num_samples = int(duration * sample_rate)
         samples = []
         
-        # Read samples from serial
-        # Format: Arduino sends 16-bit samples as two bytes (high, low) with newline separator
-        bytes_per_sample = 2
-        bytes_to_read = num_samples * bytes_per_sample
+        print(f"Reading {num_samples} from the Arduino nano...")
+        start_time = time.time()
         
-        data = ser.read(bytes_to_read)
+        
+        
+        # Read samples from serial one at a time
+        for x in range(num_samples):
+            ser.read_until()
+            cc1 = ser.read(2)
+            sample = int.from_bytes(cc1, sys.byteorder, signed=True)
+            samples.append(sample)
+            
+            
+        elapsed_time = time.time() - start_time
+        print(f"Read {len(samples)} samples in {elapsed_time:.2f} seconds")
+        
         ser.close()
-        
-        # Convert bytes to int16 samples
-        # Arduino sends: '\n' + high_byte + low_byte for each sample
-        # We need to parse this format
-        samples = []
-        i = 0
-        while i < len(data) and len(samples) < num_samples:
-            if i < len(data) - 2 and data[i] == ord('\n'):
-                # Next two bytes are the sample
-                high_byte = data[i + 1]
-                low_byte = data[i + 2]
-                sample = (high_byte << 8) | low_byte
-                # Convert unsigned to signed
-                if sample > 32767:
-                    sample = sample - 65536
-                samples.append(sample)
-                i += 3
-            else:
-                i += 1
-        
-        # Pad or truncate to exact length
-        if len(samples) < num_samples:
-            samples.extend([0] * (num_samples - len(samples)))
-        elif len(samples) > num_samples:
-            samples = samples[:num_samples]
+
         
         return np.array(samples, dtype=np.int16)
         

@@ -121,8 +121,9 @@ def deploy_model(connection: PiConnection, model_filename: str = None,
         return False, f"Model file not found: {local_model_path}"
     
     # Determine remote paths
-    # Application lives in /home/protopi/ten90audio/ten90audio/
-    remote_model_dir = "/home/protopi/ten90audio/ten90audio"
+    # Get username from config (loaded from .env file)
+    pi_user = config.get('user', 'protopi')
+    remote_model_dir = f"/home/{pi_user}/aero_loop/services/collector/models"
     remote_model_path = f"{remote_model_dir}/{model_filename}"
     
     if progress_callback:
@@ -174,7 +175,7 @@ def deploy_model(connection: PiConnection, model_filename: str = None,
         model_version = model_filename
     
     # Always update model_version.txt on Pi
-    # Version file lives in /home/protopi/ten90audio/ten90audio/
+    # Version file lives in /home/{pi_user}/aero_loop/services/collector/models/
     version_file_path = f"{remote_model_dir}/model_version.txt"
     version_content = f"{model_version}\n"
     
@@ -199,53 +200,54 @@ def deploy_model(connection: PiConnection, model_filename: str = None,
         except Exception:
             pass
     
-    # Update config file on Pi with new model path
-    # Config file lives at /home/protopi/ten90audio/ten90audio/config.json
-    target_config_path = f"{remote_model_dir}/config.json"
+    # # Update config file on Pi with new model path
+    # # NOTE: Config.json is no longer used - the new collector uses session_constants.py
+    # # This code is kept for reference but is commented out
+    # target_config_path = f"{remote_model_dir}/config.json"
     
-    # Try to read existing config or create new one
-    pi_config = {}
-    config_updated = False
+    # # Try to read existing config or create new one
+    # pi_config = {}
+    # config_updated = False
     
-    if connection.file_exists(target_config_path):
-        # Read existing config
-        try:
-            import tempfile
-            with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as tmp_file:
-                tmp_config_path = tmp_file.name
+    # if connection.file_exists(target_config_path):
+    #     # Read existing config
+    #     try:
+    #         import tempfile
+    #         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as tmp_file:
+    #             tmp_config_path = tmp_file.name
             
-            success_dl, error_dl = connection.download_file(target_config_path, tmp_config_path, progress_callback=None)
-            if success_dl:
-                with open(tmp_config_path, 'r', encoding='utf-8') as f:
-                    pi_config = json.load(f)
-                os.remove(tmp_config_path)
-        except Exception as e:
-            if progress_callback:
-                progress_callback(f"Warning: Could not read config from {target_config_path}: {e}")
+    #         success_dl, error_dl = connection.download_file(target_config_path, tmp_config_path, progress_callback=None)
+    #         if success_dl:
+    #             with open(tmp_config_path, 'r', encoding='utf-8') as f:
+    #                 pi_config = json.load(f)
+    #             os.remove(tmp_config_path)
+    #     except Exception as e:
+    #         if progress_callback:
+    #             progress_callback(f"Warning: Could not read config from {target_config_path}: {e}")
     
-    # Update config with new model path
-    # Config only uses MODEL_PATH key (version is in model_version.txt)
-    pi_config['MODEL_PATH'] = remote_model_path
+    # # Update config with new model path
+    # # Config only uses MODEL_PATH key (version is in model_version.txt)
+    # pi_config['MODEL_PATH'] = remote_model_path
     
-    import tempfile
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as tmp_file:
-        json.dump(pi_config, tmp_file, indent=2)
-        tmp_config_path = tmp_file.name
+    # import tempfile
+    # with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as tmp_file:
+    #     json.dump(pi_config, tmp_file, indent=2)
+    #     tmp_config_path = tmp_file.name
     
-    try:
-        success_cfg, error_cfg = connection.upload_file(tmp_config_path, target_config_path)
-        if not success_cfg:
-            if progress_callback:
-                progress_callback(f"Warning: Could not update config file: {error_cfg}")
-        else:
-            if progress_callback:
-                progress_callback(f"✓ Config file updated: {target_config_path}")
-            config_updated = True
-    finally:
-        try:
-            os.remove(tmp_config_path)
-        except Exception:
-            pass
+    # try:
+    #     success_cfg, error_cfg = connection.upload_file(tmp_config_path, target_config_path)
+    #     if not success_cfg:
+    #         if progress_callback:
+    #             progress_callback(f"Warning: Could not update config file: {error_cfg}")
+    #     else:
+    #         if progress_callback:
+    #             progress_callback(f"✓ Config file updated: {target_config_path}")
+    #         config_updated = True
+    # finally:
+    #     try:
+    #         os.remove(tmp_config_path)
+    #     except Exception:
+    #         pass
     
     # Log the deployment
     deploy_log = load_deploy_log()
@@ -255,8 +257,6 @@ def deploy_model(connection: PiConnection, model_filename: str = None,
         'remote_path': remote_model_path,
         'file_size': local_stat.st_size,
         'model_version': model_version,
-        'config_updated': config_updated,
-        'config_path': target_config_path if config_updated else None,
     }
     save_deploy_log(deploy_log)
     

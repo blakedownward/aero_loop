@@ -1,12 +1,88 @@
 **Aero Loop — Audio Annotation & MLOps Pipeline**
 
-A complete MLOps pipeline for aircraft audio detection, including annotation, processing, training, and remote deployment to Raspberry Pi.
+A complete MLOps pipeline for aircraft audio detection, including data collection, annotation, processing, training, and remote deployment to a Raspberry Pi.
+
+
+## AeroLoop Pipeline Overwiev
+
+The AeroLoop workflow is abstracted to just four high-level services.
+1) Collector Service: Deployed to a RaspberryPi 4B with an RTL-SDR and optional GPS unit. Monitors local air traffic to automatically capture and label aircraft and background noise recordings. (See /services/collector/README.md for detailed installation and setup instructions).
+2) Download Service: From the repo root, simply run `run_download.bat` (Windows) or `run_download.sh` (Linux) to query the RaspPi for available recordings and download to `/data/raw` on your host machine.
+3) Annotator Service: Run `run_annotator.bat` or `run_annotator.sh` to launch the Streamlit annotation GUI. Label files appropriately with event start and end times, or "flag" a sample to avoid it being added to the dataset.
+4) Upload, Train & Deploy: Running `run_train_deploy.bat` or `run_train_deploy.sh` will first trim the recordings to the annotated start and end times, then proceed to upload the new samples to the Edge Impulse training dataset. A request is sent to Edge Impulse to `retrain` the model with the updated dataset, then test on the held-out "test set". If the new model improves on the previous best model (accuracy), we send the new model to the RaspPi to assist with "on-device hard negative mining".
+**Periodically run steps 2, 3 and 4 until you've reached your desired model performance.**
+
+
+## Demo Project
+
+AeroLoop itself is an Edge AI project for building Edge AI projects. AeroLoop provides the framework for curating and training aircraft noise models on the Edge Impulse platform. So in order to demonstrate AeroLoop in action, we've attempted to train an aircraft detection model small enough to fit and run on an Arduino Nano Sense microcontroller.
+
+### Target Device
+The target device for inference is an Arduino Nano 33 BLE Sense. The Nano was selected primarily because it has a  built-in PDM microphone, but also because that's what I had on-hand. 
+
+Although not strictly necesarry, machine listening models can benefit greatly when training data is collected with the same type of device as the target device. The Arduino Nano Sense is ideal in this situation because it can readily be "flashed" as a USB microphone (used the example USB Mic sketch provided in the Arduino IDE).
+
+### Device Constraints
+The constraints of the target device will effectively limit the depth of feature generation (DSP) and model architecture choices. The Arduino Nano has just 256Kb of RAM, and 1MB of Flash memory. Total RAM approximates to just 8 seconds of raw 16KHz 16-bit audio, but we still need to ensure space for running DSP and inference.
+
+The Edge Impulse platform makes it very easy to estimate on-device performance when designing an Impulse. In the EI Studio, it's a good idea to "play-around" with inference window sizes, feature generation parameters, and model architectures to ensure each step "fits" in memory and can be processed in a timely manner.
+
+## Device Stress-Test
+Now that we have estimated our pipeline's compute, we should physically verify this on device by training a baseline model with our impulse, then deploy it to the Nano to ensure it runs as expected.
+
+## Baseline Dataset
+The AeroLoop Collector service can initially be run with `RUN_INFERENCE=False` to collect the baseline dataset, however, to help others get started ASAP, we uploaded our baseline dataset to Zenodo with a Commercial open-Source license. The dataset was split 50:50 for training and testing - ready for uploading to Edge Impulse.
+
+![Dataset Train-Test Split](submission/images/dataset-train-test-split.png)
+
+**Note:** 50:50 Train:Test split is not a common way of splitting data. However, the Test set is critical to monitoring model improvements over time, and should remain a "fixed" set to ensure direct comparison between models. As we are staring with a relatively small dataset, a typical 80:20 split would become disproportionately small as we collect more training data. Additionally, this split will provide more "headroom" to evaluate new models on... eg, if we start with 99.5% accuracy on the test set, then it's probably not representative or "hard-enough" to draw meaningful conclusions from. Starting with 95% accuracy on the other hand does provide enough difficult test cases that even a change from 95% to 95.5% can be considered a significant model improvement.
+
+![Download Dataset Files](submission/images/download-dataset-files.png)
+
+To get the dataset, go to [Zenodo Link](#) and "Download All" files *(Note: Update with actual Zenodo link)*
+Unzip the `aircraft-train`, `aircraft-test`, `negative-train` and `negative-test` folders.
+In your Edge Impulse project, go to "Data Acquisition" > "Add Existing Data"
+Upload each folder, one by one, ensuring the appropriate "train/test" category and "aircraft/negative" labels are applied.
+
+*Note: Add a screenshot/video of the file upload process when available*
+
+## Baseline Impulse (DSP + Inference)
+Since we know the limit of our inference window size is approx 8 seconds, but we still have to allow for DSP and inference compute, so we started by testing a window size of 2 seconds. This should hopefully provide enough temporal information, while also allowing space for running DSP and inference without too much lag.
+
+For Feature Generation/DSP, Edge Impulse recommends the MFE DSP block for audio "state" detection (TODO: verify this) - so we went with that recomendation. Being a "state" detection task, this is essentially a binary classification task, but it's important to remember that EI treats this as a multi-class classifier with soft-max label probabilities. This does not affect our binary classifier, however it DOES provide flexibility to increase the scope of output labels simply by adding new labelled data to the dataset.
+
+Save the impulse, and contiunue to Feature Generation parameter setup.
+
+![Impulse Setup](submission/images/impulse-setup.png)
+
+Edge Impulse initialises with some default DSP parameters. Scrolling to the bottom of this page will display the estimated "On-device performance" for this DSP block on your target device (must ensure your target device is set in EI studio).
+
+![Default DSP Device Performance](submission/images/default-dsp-device-estimates.png)
+
+The default parameters are estimated to take ~500 ms. and peak RAM of ~36 KB. RAM seems to be within limits, however 500 ms. seems a bit too long to make this feel like real-time inference. By increasing the frame length and stride to 0.032 seconds, we can effectively reduce the number of calculations performed over the entire window. Another way to improve processing time was to aggressively cap the high frequency (from 8KHz to 4KHz), which allows us to acheive similar frequency resolution from a smaller number of Mel filters (less mels == faster processing).
+
+With our new parameters, we have now halved the time and RAM required to process each sample.
+
+![Simplified DSP Device Performance](submission/images/simplified-dsp-device-estimates.png)
+
+### Baseline Model Architecture
+It's important to first mention here that the inference window size and DSP parameters will directly impact the number of input dimensions being passed to our model. Without careful management, basic neural networks can easily explode to millions of parameters. When designing an architecture for an edge device, it's important to know exactly what each layer in your model does. Convolutional layers not only learn features, but also have the added benefit of dimensionality reduction and fast computation. Edge Impulse has a default Conv2D architecture with 2 Conv layers to get started with. I opted to further reduce the number of parameters in the final hidden layer by adding another 2 Conv2D layers - reducing the hidden layer to just 128 parameters.
+
+![CNN Architecture](submission/images/conv2d-architecture.png)
+
+### Full Pipeline
+Below we can see how the dimensions change as we reduce the raw audio data to just 2 dimansions (aircrft, negative)
+
+1) 2 Seconds of raw audio: 32,000
+2) Feature Extraction: 1,984 (64x32)
+3) Convolutional Nerual Net: 2
+
 
 ## Quick Start
 
 The easiest way to run the pipeline is using the provided workflow scripts. Each script automatically activates the appropriate virtual environment and runs the service.
 
-### Download New Samples (Run frequently - hourly/2-hourly)
+### Download New Samples (Run daily, or twice daily)
 ```bash
 # Windows (PowerShell or Command Prompt)
 .\run_download.bat
@@ -16,7 +92,7 @@ The easiest way to run the pipeline is using the provided workflow scripts. Each
 ```
 Downloads finished audio sessions from Raspberry Pi to `data/raw/`.
 
-### Annotate Samples (Run periodically)
+### Annotate Samples (Run periodically when batches are available)
 ```bash
 # Windows (PowerShell or Command Prompt)
 .\run_annotator.bat
@@ -79,7 +155,7 @@ Also create a `.env` file in the repository root with your configuration (see [R
 
 ### 1. Annotator (`services/annotator/`)
 - Annotates WAV clips by batch, saving labels to `annotations.json` per batch and marking completion via `.processed`.
-- Displays filename, waveform, and an audio player; supports range selection and flags.
+- Displays filename, waveform, and an audio player; supports range selection and flags (marking a sample with a Flag will essentially drop the sample from the dataset).
 
 **Quick Start**
 - **Recommended**: Use `run_annotator.bat` or `run_annotator.sh` (see Quick Start section above)
@@ -119,7 +195,7 @@ Required variables:
 - **Raspberry Pi**: `PI_HOST`, `PI_USER`, `PI_SESSIONS_PATH`, `PI_MODEL_PATH`
 - **SSH Auth**: Either `PI_SSH_KEY_PATH` or `PI_SSH_PASSWORD`
 
-Optional: You can also use `config/remote_config.json` (see `config/remote_config.json.example`), but `.env` is recommended for all configuration.
+Configuration is done via `.env` file in the repository root.
 
 **Download Sessions**
 - **Recommended**: Use `run_download.bat` or `run_download.sh` (see Quick Start section above)
@@ -178,9 +254,9 @@ Optional: You can also use `config/remote_config.json` (see `config/remote_confi
 
 The typical workflow follows three main phases:
 
-1. **Data Collection**: Raspberry Pi continuously collects audio samples in sessions
+1. **Data Collection**: Raspberry Pi continuously collects audio samples in batched sessions (typically less than one hour). When attached to a network, the collector service can run 24/7 without physical intervention or stopping recording. When a recording session is completed, it is marked with a `.processed` file to indicate samples are ready to be downloaded in the next step.
 
-2. **Download** (Run frequently - hourly/2-hourly):
+2. **Download** (Run daily, or twice daily):
    ```bash
    .\run_download.bat  # Windows (PowerShell/CMD)
    # or

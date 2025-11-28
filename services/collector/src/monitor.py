@@ -20,9 +20,9 @@ CONFIG_DIR = os.path.join(COLLECTOR_DIR, 'config')
 sys.path.insert(0, CONFIG_DIR)
 
 # Import session_constants from config/ directory
-# Note: You must copy session_constants.py.example to session_constants.py first
+# Note: You must copy /config/session_constants.py.example to /config/session_constants.py first
 import session_constants as c
-from logger import update_craft_log, init_session_log
+from logger import init_session_log
 from areaofinterest import in_aoi, fetch_dist
 
 # Set the flag for running inference on collected samples
@@ -34,13 +34,9 @@ if RUN_INFERENCE:
 
 # Print session configuration
 print("Mic Mode:", c.MIC_MODE)
-print("Microphone ID:", c.MIC_ID)
-print("Location ID:", c.LOC_ID)
 
-if c.MIC_MODE == "nano":
-    import nano_record as rec
-else:
-    import record as rec
+    
+import nano_record as rec
 
 init_session_log()
 
@@ -75,7 +71,7 @@ def discrete_session():
     socket_errors = 0
     session_craft = []
     last_craft = ''
-    update_craft_log('*')
+    # update_craft_log('*')
     
     # Session loop condition
     while silence_count <= c.MAX_SILENCE:
@@ -165,7 +161,7 @@ def discrete_session():
                     
                 if RUN_INFERENCE:
                     # Check the max prediction for this file
-                    preds = inference.predict_file(wav_path=file_path, model_path=c.MODEL_PATH)
+                    preds = inference.predict_file(wav_path=file_path, model_path=c.MODEL_PATH, debug=True)
                     
                     if np.max(preds) >= 0.4:
                         status = "saved"
@@ -208,7 +204,7 @@ def discrete_session():
                             aircraft_count += 1
                             
                             if RUN_INFERENCE:
-                                preds = inference.predict_file(wav_path=file_path, model_path=c.MODEL_PATH)
+                                preds = inference.predict_file(wav_path=file_path, model_path=c.MODEL_PATH, debug=True)
                                 status = "saved"
                                 update_inference_log(filename=filename, file_status=status, predictions=preds, model_version=c.MODEL_VERSION, session_path=c.SESSION_PATH)
                         except sounddevice.PortAudioError:
@@ -218,7 +214,7 @@ def discrete_session():
                             print(f'Exception raised for aircraft recording: {e}')
 
         # Housekeeping
-        update_craft_log(session_craft)
+        # update_craft_log(session_craft)
 
         count += 1
         if count > 500:
@@ -226,7 +222,7 @@ def discrete_session():
             print('Session end... Rebooting.\n')
             print(' ')
             # Get username from environment or use default
-            username = os.getenv('PI_USERNAME', 'protopi')
+            username = os.getenv('PI_USERNAME', 'pi')
             os.system(f'sudo rm /home/{username}/monitor_debug.log')
             os.system('sudo reboot')
             time.sleep(15)

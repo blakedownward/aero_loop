@@ -1,85 +1,65 @@
 {
-  "40006368": {
-    "started_at": "2025-11-10T07:57:58.875677Z",
-    "job_id": 40006368,
-    "status": "completed",
-    "api_response": {
-      "id": 40006368,
-      "category": "Retraining model (Impulse #1)",
-      "categoryKey": "retrain-studio-wrapper",
-      "key": "retrain-studio-wrapper-1",
-      "created": "2025-11-10T07:57:59.014Z",
-      "started": "2025-11-10T07:58:04.000Z",
-      "finished": "2025-11-10T08:26:57.832Z",
-      "finishedSuccessful": true,
-      "jobNotificationUids": [],
-      "additionalInfo": "Impulse #1",
-      "computeTime": 1734
-    },
-    "last_checked": "2025-11-10T22:29:52.286458+00:00",
-    "completed_at": "2025-11-10T22:29:52.286484+00:00"
-  },
-  "40041000": {
-    "started_at": "2025-11-11T04:49:34.961115+00:00",
-    "job_id": 40041000,
+  "40623122": {
+    "started_at": "2025-11-23T08:16:41.743770+00:00",
+    "job_id": 40623122,
     "status": "started",
     "api_response": {
       "success": true,
-      "id": 40041000
+      "id": 40623122
     }
   },
-  "40086834": {
-    "started_at": "2025-11-11T23:11:16.222636+00:00",
-    "job_id": 40086834,
+  "40642465": {
+    "started_at": "2025-11-23T21:50:07.840210+00:00",
+    "job_id": 40642465,
     "status": "started",
     "api_response": {
       "success": true,
-      "id": 40086834
+      "id": 40642465
     }
   },
-  "40134716": {
-    "started_at": "2025-11-12T22:57:07.958583+00:00",
-    "job_id": 40134716,
+  "40655176": {
+    "started_at": "2025-11-24T06:54:05.740328+00:00",
+    "job_id": 40655176,
     "status": "started",
     "api_response": {
       "success": true,
-      "id": 40134716
+      "id": 40655176
     }
   },
-  "40260789": {
-    "started_at": "2025-11-16T03:19:27.378708+00:00",
-    "job_id": 40260789,
+  "40699903": {
+    "started_at": "2025-11-24T21:50:23.402462+00:00",
+    "job_id": 40699903,
     "status": "started",
     "api_response": {
       "success": true,
-      "id": 40260789
+      "id": 40699903
     }
   },
-  "40376143": {
-    "started_at": "2025-11-18T02:26:02.060225+00:00",
-    "job_id": 40376143,
+  "40719630": {
+    "started_at": "2025-11-25T07:31:13.022613+00:00",
+    "job_id": 40719630,
     "status": "started",
     "api_response": {
       "success": true,
-      "id": 40376143
+      "id": 40719630
     }
   },
-  "40428142": {
-    "started_at": "2025-11-18T23:19:10.512290+00:00",
-    "job_id": 40428142,
+  "40721939": {
+    "started_at": "2025-11-25T08:37:00.149276+00:00",
+    "job_id": 40721939,
     "status": "started",
     "api_response": {
       "success": true,
-      "id": 40428142
+      "id": 40721939
     }
   },
-  "40483187": {
-    "started_at": "2025-11-19T22:59:13.040555+00:00",
-    "job_id": 40483187,
+  "40762767": {
+    "started_at": "2025-11-26T01:15:08.148199+00:00",
+    "job_id": 40762767,
     "status": "started",
     "api_response": {
       "success": true,
-      "id": 40483187
+      "id": 40762767
     }
   }
 }

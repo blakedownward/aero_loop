@@ -84,7 +84,7 @@ Select the target device in EI studio (Arduino Nano BLE Sense)
 
 
 ## Deploy Impulse to Target Device to ensure it "Fits"
-<iframe width="640" height="348" src="https://www.loom.com/embed/fbed363ca9364b2b87305b3ea127799f" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+<iframe width="640" height="348" src="C:\Users\Blake\Repos\aero_loop\submission\images\Videos_Library_Loom-22November2025-ezgif.com-video-speed.mp4" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 
 ## More words

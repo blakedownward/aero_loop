@@ -84,12 +84,13 @@ def aggregate_stats():
         return {}
     
     # Dictionary to aggregate stats by model_version
-    # Structure: {model_version: {total: 0, aircraft: 0, negative: 0, negative_deleted: 0}}
+    # Structure: {model_version: {total: 0, aircraft: 0, negative: 0, negative_deleted: 0, negative_saved: 0}}
     stats_by_model = defaultdict(lambda: {
         'total_samples': 0,
         'aircraft_samples': 0,
         'total_negative_samples': 0,
-        'negative_deleted': 0
+        'negative_deleted': 0,
+        'negative_saved': 0
     })
     
     # Scan all batch directories
@@ -121,6 +122,8 @@ def aggregate_stats():
                 stats_by_model[model_version]['total_negative_samples'] += 1
                 if status == 'deleted':
                     stats_by_model[model_version]['negative_deleted'] += 1
+                elif status == 'saved':
+                    stats_by_model[model_version]['negative_saved'] += 1
             else:
                 # Aircraft sample
                 stats_by_model[model_version]['aircraft_samples'] += 1
@@ -167,6 +170,25 @@ def output_csv(stats_by_model: dict, output_path: str = None):
     
     print(f"\nOutput written to: {output_path}")
     print(f"Processed {len(sorted_models)} model(s)")
+    
+    # Calculate and print rejection rate for model_20251124_215810.tflite
+    target_model = 'model_20251124_215810.tflite'
+    if target_model in stats_by_model:
+        stats = stats_by_model[target_model]
+        total_neg = stats['total_negative_samples']
+        neg_del = stats['negative_deleted']
+        neg_saved = stats.get('negative_saved', 0)
+        if total_neg > 0:
+            rejection_rate = (neg_del / total_neg) * 100
+            print(f"\n{'='*60}")
+            print(f"{target_model} (Iteration 5):")
+            print(f"  Total negative samples: {total_neg}")
+            print(f"  Negative deleted: {neg_del}")
+            print(f"  Negative saved: {neg_saved}")
+            print(f"  Negative rejection rate: {rejection_rate:.1f}%")
+            print(f"{'='*60}")
+        else:
+            print(f"\n{target_model}: No negative samples found")
 
 
 def main():

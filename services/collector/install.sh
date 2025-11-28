@@ -106,13 +106,17 @@ mkdir -p sessions models
 mkdir -p "$(date +%Y-%m-%d)" 2>/dev/null || true
 
 echo ""
-echo "Step 8: Setting up systemd service..."
+echo "Step 8: Setting up systemd services..."
 if [ -f "scripts/setup_systemd.sh" ]; then
     chmod +x scripts/setup_systemd.sh
     ./scripts/setup_systemd.sh
+    echo ""
+    echo "Installed systemd services:"
+    echo "  - rundump.service (dump1090 service)"
+    echo "  - aero-collector.service (main collector service)"
 else
     echo "Warning: setup_systemd.sh not found. Skipping systemd setup."
-    echo "You may need to set up the systemd service manually."
+    echo "You may need to set up the systemd services manually."
 fi
 
 echo ""
@@ -140,8 +144,13 @@ echo "   source venv/bin/activate"
 echo "   cd src"
 echo "   python3 init_recording.py"
 echo ""
-echo "5. Start the systemd service:"
+echo "5. Start the systemd services:"
+echo "   sudo systemctl start rundump"
+echo "   sudo systemctl enable rundump"
 echo "   sudo systemctl start aero-collector"
 echo "   sudo systemctl enable aero-collector"
+echo ""
+echo "Note: rundump.service must be started before aero-collector.service"
+echo "      (this is handled automatically by systemd dependencies)"
 echo ""
 

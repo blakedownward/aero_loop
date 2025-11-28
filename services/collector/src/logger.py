@@ -7,6 +7,7 @@ import sys
 import json
 from datetime import datetime
 from pathlib import Path
+import numpy as np
 
 # Add config directory to path for imports
 COLLECTOR_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -59,21 +60,24 @@ def update_inference_log(filename, file_status, predictions, model_version, sess
         session_path: Path to the session directory
     """
     log_file = os.path.join(session_path, 'inference_log.jsonl')
-    timestamp = datetime.now().isoformat()
+    timestamp = datetime.now().isoformat() + "Z"
     
-    import numpy as np
+    rounded = np.round(predictions, 3)
+    
+    
+    def f3(x):
+        return float(f"{x:.3f}")
+    
     log_entry = {
         'timestamp': timestamp,
-        'filename': filename,
+        'file': filename,
         'status': file_status,
+        'num_periods': int(len(predictions)),
         'model_version': model_version,
-        'predictions': {
-            'min': float(np.min(predictions)),
-            'max': float(np.max(predictions)),
-            'mean': float(np.mean(predictions)),
-            'std': float(np.std(predictions)),
-            'count': len(predictions)
-        }
+        'predictions': rounded.tolist(),
+        'max_pred': f3(np.max(predictions)),
+        'mean_pred': f3(np.mean(predictions)),
+        'min_pred': f3(np.min(predictions))
     }
     
     with open(log_file, 'a') as f:
