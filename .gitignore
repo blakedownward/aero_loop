@@ -31,6 +31,3 @@ __pycache__/
 .env
 
 DEL_*
-
-# Generated analysis outputs
-data/inference_stats_by_model.csv
