@@ -1,5 +1,5 @@
 # Data directory (all contents)
-data/
+data/*
 
 models/*
 
